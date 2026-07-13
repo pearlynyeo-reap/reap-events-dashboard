@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reap Events Master Dashboard 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --indigo: #4f46e5;
+      --indigo-light: #6366f1;
+      --indigo-dark: #3730a3;
+      --indigo-50: #eef2ff;
+      --indigo-100: #e0e7ff;
+      --indigo-200: #c7d2fe;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --blue: #2563eb;
+      --blue-bg: #dbeafe;
+      --yellow: #ca8a04;
+      --yellow-bg: #fef9c3;
+      --orange: #ea580c;
+      --orange-bg: #ffedd5;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --gray: #6b7280;
+      --gray-bg: #f3f4f6;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.07), 0 4px 6px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
+      color: white;
+      padding: 28px 32px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(67,56,202,0.4);
+    }
+    .header-inner { max-width: 1400px; margin: 0 auto; }
+    .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .header-brand { display: flex; align-items: center; gap: 14px; }
+    .header-logo {
+      width: 42px; height: 42px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; letter-spacing: -1px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .header-sub { font-size: 12.5px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .header-meta { text-align: right; font-size: 12px; color: rgba(255,255,255,0.65); }
+    .header-meta strong { display: block; font-size: 13px; color: rgba(255,255,255,0.9); }
+    /* ── TABS ── */
+    .tabs-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      position: sticky;
+      top: 98px;
+      z-index: 90;
+      box-shadow: var(--shadow);
+    }
+    .tabs-bar-inner { max-width: 1400px; margin: 0 auto; display: flex; gap: 0; }
+    .tab-btn {
+      padding: 14px 20px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--indigo); }
+    .tab-btn.active { color: var(--indigo); border-bottom-color: var(--indigo); font-weight: 600; }
+    /* ── MAIN ── */
+    .main { max-width: 1400px; margin: 0 auto; padding: 28px 32px 60px; }
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--indigo);
+    }
+    .kpi-card.alert::before { background: var(--red); }
+    .kpi-card.success::before { background: var(--green); }
+    .kpi-card.warning::before { background: var(--orange); }
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .kpi-value { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
+    .kpi-value.red { color: var(--red); }
+    .kpi-value.green { color: var(--green); }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+    .kpi-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--red-bg); color: var(--red);
+      font-size: 10px; font-weight: 700; padding: 2px 7px;
+      border-radius: 999px; margin-top: 6px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    /* ── SECTION ── */
+    .section { display: none; }
+    .section.active { display: block; }
+    .section-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .section-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    /* ── CARDS / PANELS ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card-title .badge { font-size: 10px; font-weight: 700; background: var(--indigo-100); color: var(--indigo); padding: 2px 8px; border-radius: 999px; }
+    /* ── GRID LAYOUTS ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    /* ── REGIONAL CARDS ── */
+    .region-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+    .region-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .region-flag { font-size: 22px; margin-bottom: 6px; }
+    .region-name { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .region-count { font-size: 28px; font-weight: 800; color: var(--indigo); margin: 4px 0; }
+    .region-sub { font-size: 11px; color: var(--text-muted); }
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--bg);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--indigo-50); }
+    tbody td { padding: 11px 14px; vertical-align: middle; }
+    /* ── BADGES ── */
+    .badge-status {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .badge-completed { background: var(--green-bg); color: var(--green); }
+    .badge-confirmed { background: var(--blue-bg); color: var(--blue); }
+    .badge-planning { background: var(--yellow-bg); color: var(--yellow); }
+    .badge-consideration { background: var(--orange-bg); color: var(--orange); }
+    .badge-tbc { background: var(--gray-bg); color: var(--gray); }
+    .badge-tier-sig { background: var(--indigo-100); color: var(--indigo); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .badge-tier-growth { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .badge-tier-non { background: var(--gray-bg); color: var(--gray); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .icon-warn { color: var(--red); font-size: 14px; }
+    .icon-ok { color: var(--green); font-size: 14px; }
+    .icon-pending { color: var(--text-muted); font-size: 14px; }
+    /* ── FILTER BUTTONS ── */
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-btn {
+      padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+      border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--indigo); color: var(--indigo); }
+    .filter-btn.active { background: var(--indigo); color: white; border-color: var(--indigo); }
+    /* ── ALERT BANNER ── */
+    .alert-banner {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border: 1px solid #fecaca;
+      border-left: 5px solid var(--red);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .alert-icon { font-size: 22px; flex-shrink: 0; }
+    .alert-text { flex: 1; }
+    .alert-title { font-weight: 700; color: #991b1b; font-size: 14px; }
+    .alert-sub { font-size: 12.5px; color: #b91c1c; margin-top: 2px; }
+    /* ── POST-MORTEM URGENCY CARDS ── */
+    .mortem-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+    .mortem-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--red);
+    }
+    .mortem-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .mortem-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .mortem-region { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .mortem-days {
+      text-align: center;
+      background: var(--red-bg);
+      border-radius: 10px;
+      padding: 8px 14px;
+    }
+    .mortem-days-num { font-size: 28px; font-weight: 900; color: var(--red); line-height: 1; }
+    .mortem-days-label { font-size: 10px; font-weight: 600; color: #b91c1c; text-transform: uppercase; }
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .check-icon-pending { color: var(--red); font-size: 15px; }
+    .check-icon-done { color: var(--green); font-size: 15px; }
+    .check-label { flex: 1; }
+    .check-label.overdue { color: #991b1b; font-weight: 500; }
+    .check-action { font-size: 11px; color: var(--indigo); font-weight: 600; cursor: pointer; text-decoration: none; }
+    .check-action:hover { text-decoration: underline; }
+    /* ── CHART CONTAINERS ── */
+    .chart-container { position: relative; }
+    .chart-sm { height: 220px; }
+    .chart-md { height: 280px; }
+    .chart-lg { height: 340px; }
+    /* ── TIMELINE ── */
+    .timeline-wrap { overflow-x: auto; padding-bottom: 8px; }
+    .timeline { display: flex; gap: 0; min-width: 900px; position: relative; }
+    .timeline-quarter { flex: 1; }
+    .tq-header {
+      padding: 8px 12px;
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: white;
+      border-radius: 8px 8px 0 0;
+    }
+    .tq-q1 { background: #7c3aed; }
+    .tq-q2 { background: #2563eb; }
+    .tq-q3 { background: #059669; }
+    .tq-q4 { background: #d97706; }
+    .tq-events { padding: 8px; background: var(--bg); min-height: 80px; border-radius: 0 0 8px 8px; border: 1px solid var(--border); border-top: none; }
+    .tq-event {
+      font-size: 11px; padding: 4px 8px; border-radius: 6px;
+      margin-bottom: 4px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .tq-event-completed { background: var(--green-bg); color: var(--green); }
+    .tq-event-confirmed { background: var(--blue-bg); color: var(--blue); }
+    .tq-event-planning { background: var(--yellow-bg); color: var(--yellow); }
+    .tq-event-consideration { background: var(--orange-bg); color: var(--orange); }
+    .tq-event-tbc { background: var(--gray-bg); color: var(--gray); }
+    /* ── BUDGET BARS ── */
+    .budget-bar-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .budget-bar-label { width: 180px; font-size: 12px; font-weight: 600; color: var(--text); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .budget-bar-track { flex: 1; height: 24px; background: var(--gray-bg); border-radius: 6px; overflow: hidden; position: relative; }
+    .budget-bar-proposed { height: 100%; background: var(--indigo-200); border-radius: 6px; position: absolute; top: 0; left: 0; }
+    .budget-bar-actual { height: 100%; background: var(--indigo); border-radius: 6px; position: absolute; top: 0; left: 0; }
+    .budget-bar-values { width: 120px; font-size: 11px; color: var(--text-muted); flex-shrink: 0; text-align: right; }
+    /* ── RECON CHECKLIST ── */
+    .recon-table td:last-child { text-align: center; }
+    .recon-check { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border); display: inline-block; vertical-align: middle; }
+    .recon-check.done { background: var(--green); border-color: var(--green); }
+    .recon-check.pending { background: var(--red-bg); border-color: #fca5a5; }
+    /* ── FORECAST TABLE ── */
+    .roi-pill {
+      display: inline-block;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+    }
+    .roi-good { background: var(--green-bg); color: var(--green); }
+    .roi-pending { background: var(--gray-bg); color: var(--gray); }
+    .roi-na { background: var(--yellow-bg); color: var(--yellow); }
+    /* ── HUBSPOT ── */
+    .hs-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .hs-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 18px 20px; box-shadow: var(--shadow); border: 1px solid var(--border);
+      text-align: center;
+    }
+    .hs-card-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .hs-card-value { font-size: 24px; font-weight: 800; color: var(--indigo); }
+    .hs-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 16px 32px;
+      margin-top: 40px;
+    }
+    .footer-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .footer-sources { font-size: 11.5px; color: var(--text-muted); }
+    .footer-sources span { margin: 0 4px; }
+    .footer-sources strong { color: var(--text); }
+    .footer-right { font-size: 11px; color: var(--text-muted); }
+    /* ── VARIANCE ── */
+    .var-pos { color: var(--green); font-weight: 600; }
+    .var-neg { color: var(--red); font-weight: 600; }
+    /* ── OVERDUE TAG ── */
+    .overdue-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: var(--red-bg); color: var(--red);
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    /* ── PENDING SYNC ── */
+    .pending-sync {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--yellow-bg); color: var(--yellow);
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 999px;
+    }
+    .synced-ok {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--green-bg); color: var(--green);
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 999px;
+    }
+    /* ── INFO NOTE ── */
+    .info-note {
+      background: var(--indigo-50);
+      border: 1px solid var(--indigo-200);
+      border-left: 4px solid var(--indigo);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 12.5px;
+      color: #3730a3;
+      margin-bottom: 16px;
+    }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .region-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .main { padding: 16px; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .mortem-grid { grid-template-columns: 1fr; }
+    }
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    /* ── TOTAL ROW ── */
+    .total-row { background: var(--indigo-50) !important; font-weight: 700; }
+    .total-row td { color: var(--indigo-dark); }
+    /* ── NOTES CELL ── */
+    td.notes-cell { font-size: 12px; color: var(--text-muted); max-width: 260px; }
+    /* ── FORECAST SECTION ── */
+    .forecast-section { background: var(--indigo-50); border: 1px solid var(--indigo-200); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 20px; }
+    .forecast-section-title { font-size: 13px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 10px; }
+    /* ── STAGE PILL ── */
+    .stage-pill {
+      display: inline-block; padding: 2px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+    }
+    .stage-prospect { background: #f3e8ff; color: #7c3aed; }
+    .stage-qualification { background: #dbeafe; color: #1d4ed8; }
+    .stage-proposal { background: #e0f2fe; color: #0369a1; }
+    .stage-onboarding { background: #d1fae5; color: #065f46; }
+    .stage-signedup { background: #d1fae5; color: #065f46; }
+    .stage-other { background: var(--gray-bg); color: var(--gray); }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════ HEADER ════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="header-logo">R</div>
+        <div>
+          <div class="header-title">Reap Events Master Dashboard 2026</div>
+          <div class="header-sub">Tracking 34 events across 6 regions — Q1 → Q4 &nbsp;·&nbsp; Owner: Pearlyn Yeo, GTM &amp; Brand Lead</div>
+        </div>
+      </div>
+      <div class="header-meta">
+        <strong>Last Updated</strong>
+        Jul 13, 2026
+        <div style="margin-top:4px;">Pipeline → Execution → Post-Mortem → HubSpot ROI → Budget Recon → Revenue Forecast</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ TABS ════════════════════════════════════════ -->
+<div class="tabs-bar">
+  <div class="tabs-bar-inner">
+    <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+    <button class="tab-btn" onclick="switchTab('roster')">📋 Event Roster</button>
+    <button class="tab-btn" onclick="switchTab('budget')">💰 Budget & Reconciliation</button>
+    <button class="tab-btn" onclick="switchTab('mortem')">⚠️ Post-Mortem Tracker</button>
+    <button class="tab-btn" onclick="switchTab('forecast')">📈 Revenue Forecast</button>
+    <button class="tab-btn" onclick="switchTab('hubspot')">🔗 HubSpot Pipeline <span style="font-size:10px;font-weight:700;background:#fef9c3;color:#92400e;padding:2px 6px;border-radius:4px;margin-left:4px;">WIP — data not accurate</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ MAIN ════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- ── KPI STRIP (always visible) ── -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Events 2026</div>
+      <div class="kpi-value">34</div>
+      <div class="kpi-sub">Across 6 global regions</div>
+    </div>
+    <div class="kpi-card success">
+      <div class="kpi-label">Completed Events</div>
+      <div class="kpi-value green">9</div>
+      <div class="kpi-sub">H1 + Accra (Jul 9)</div>
+    </div>
+    <div class="kpi-card warning">
+      <div class="kpi-label">Budget Committed (9 events)</div>
+      <div class="kpi-value">~$205K</div>
+      <div class="kpi-sub">Incl. Accra ~$11K</div>
+    </div>
+    <div class="kpi-card warning">
+      <div class="kpi-label">HubSpot Sync Pending</div>
+      <div class="kpi-value">4</div>
+      <div class="kpi-sub">Completed events not yet synced</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Pipeline Target (H1)</div>
+      <div class="kpi-value">$969.5K</div>
+      <div class="kpi-sub">5× ROI on committed spend</div>
+    </div>
+    <div class="kpi-card alert">
+      <div class="kpi-label">Post-Event Actions Overdue</div>
+      <div class="kpi-value red">1</div>
+      <div class="kpi-badge">🔴 Accra follow-ups due Jul 11</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB: OVERVIEW
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="tab-overview" class="section active">
+    <div class="section-title">Events Overview 2026</div>
+    <div class="section-sub">Full-year snapshot — pipeline, regional coverage, budget distribution, and calendar timeline.</div>
+
+    <!-- Regional cards -->
+    <div class="region-grid">
+      <div class="region-card">
+        <div class="region-flag">🌎</div>
+        <div class="region-name">LATAM</div>
+        <div class="region-count">13</div>
+        <div class="region-sub">5 completed · 4 TBC · 3 confirmed · 3 consideration</div>
+      </div>
+      <div class="region-card">
+        <div class="region-flag">🌏</div>
+        <div class="region-name">APAC</div>
+        <div class="region-count">6</div>
+        <div class="region-sub">2 completed · 2 confirmed · 2 TBC</div>
+      </div>
+      <div class="region-card">
+        <div class="region-flag">🌍</div>
+        <div class="region-name">Africa</div>
+        <div class="region-count">5</div>
+        <div class="region-sub">2 completed · 0 active · 3 TBC</div>
+      </div>
+      <div class="region-card">
+        <div class="region-flag">🇺🇸</div>
+        <div class="region-name">North America</div>
+        <div class="region-count">5</div>
+        <div class="region-sub">2 completed · 3 consideration · 0 confirmed</div>
+      </div>
+      <div class="region-card">
+        <div class="region-flag">🌐</div>
+        <div class="region-name">Rest of World</div>
+        <div class="region-count">6</div>
+        <div class="region-sub">0 completed · 2 consideration · 4 TBC</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Donut: Events by status -->
+      <div class="card">
+        <div class="card-title">Events by Status <span class="badge">34 Total</span></div>
+        <div class="chart-container chart-md">
+          <canvas id="chartStatus"></canvas>
+        </div>
+      </div>
+      <!-- Bar: Budget by region -->
+      <div class="card">
+        <div class="card-title">H1 Budget Committed by Region <span class="badge">$193.9K</span></div>
+        <div class="chart-container chart-md">
+          <canvas id="chartBudgetRegion"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card">
+      <div class="card-title">2026 Events Calendar — Timeline View</div>
+      <div class="timeline-wrap">
+        <div class="timeline" id="timeline-strip"></div>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:10px;height:10px;border-radius:3px;background:#16a34a;display:inline-block;"></span> Completed</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:10px;height:10px;border-radius:3px;background:#2563eb;display:inline-block;"></span> Confirmed</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:10px;height:10px;border-radius:3px;background:#ca8a04;display:inline-block;"></span> Planning</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:10px;height:10px;border-radius:3px;background:#ea580c;display:inline-block;"></span> Under Consideration</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:10px;height:10px;border-radius:3px;background:#9ca3af;display:inline-block;"></span> TBC</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB: ROSTER
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="tab-roster" class="section">
+    <div class="section-title">Event Roster — Full 2026 List</div>
+    <div class="section-sub">All 34 events with status, budget, HubSpot sync state, and post-mortem tracking.</div>
+
+    <div class="filter-row" id="roster-filters">
+      <button class="filter-btn active" onclick="filterRoster('all', this)">All (34)</button>
+      <button class="filter-btn" onclick="filterRoster('completed', this)">Completed (9)</button>
+      <button class="filter-btn" onclick="filterRoster('active', this)">Active / Upcoming (8)</button>
+      <button class="filter-btn" onclick="filterRoster('LATAM', this)">LATAM (13)</button>
+      <button class="filter-btn" onclick="filterRoster('APAC', this)">APAC (5)</button>
+      <button class="filter-btn" onclick="filterRoster('Africa', this)">Africa (5)</button>
+      <button class="filter-btn" onclick="filterRoster('North America', this)">North America (5)</button>
+      <button class="filter-btn" onclick="filterRoster('RoW', this)">Rest of World (6)</button>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="table-wrap">
+        <table id="roster-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Region</th>
+              <th>Date</th>
+              <th>Tier</th>
+              <th>Status</th>
+              <th>Budget Proposed</th>
+              <th>Budget Actual</th>
+              <th>Pipeline Target</th>
+              <th>HubSpot</th>
+              <th>Post-Mortem</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB: BUDGET & RECONCILIATION
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="tab-budget" class="section">
+    <div class="section-title">Budget & Reconciliation</div>
+    <div class="section-sub">H1 actuals, variance analysis, reconciliation status, and H2 estimates.</div>
+
+    <div class="alert-banner">
+      <div class="alert-icon">💸</div>
+      <div class="alert-text">
+        <div class="alert-title">Budget actuals still TBC for several completed events</div>
+        <div class="alert-sub">MXFTW (~$60K actual), M2020 BKK (~$48K actual), Bitso ($41.9K actual) — HubSpot sync still pending for all three. Accra (~$11K estimated) — event completed Jul 9, final actual TBC.</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">H1 2026 — Proposed vs Actual Spend</div>
+        <div class="chart-container chart-md">
+          <canvas id="chartBudgetCompare"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">H1 2026 — Budget Summary</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Proposed</th>
+                <th>Actual</th>
+                <th>Variance</th>
+              </tr>
+            </thead>
+            <tbody id="budget-h1-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">H2 2026 — Upcoming Budget Estimates</div>
+      <div class="info-note">⚠️ H2 budgets are estimates only. Final allocations subject to approval per event go/no-go decision. Payward co-activation may reduce Reap's net cost for Signature events.</div>
+      <div class="table-wrap">
+        <table id="budget-h2-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Region</th>
+              <th>Tier</th>
+              <th>Status</th>
+              <th>Est. Budget</th>
+              <th>Pipeline Target (5×)</th>
+              <th>Go/No-Go</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="budget-h2-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2026 Budget Running Total</div>
+      <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:16px;">
+        <div style="text-align:center; padding:16px; background:var(--indigo-50); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Committed</div>
+          <div style="font-size:22px;font-weight:800;color:var(--indigo);">$193.9K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">8 events</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--green-bg); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Reconciled</div>
+          <div style="font-size:22px;font-weight:800;color:var(--green);">$31.6K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">MERGE SP only</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--yellow-bg); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H2 Est. Budget</div>
+          <div style="font-size:22px;font-weight:800;color:var(--yellow);">~$250K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Subject to go/no-go</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--gray-bg); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">FY 2026 Est. Total</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text);">~$444K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">→ $2.2M pipeline target</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB: POST-MORTEM TRACKER
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="tab-mortem" class="section">
+    <div class="section-title">Post-Mortem Tracker</div>
+    <div class="section-sub">Close-out status for all completed events — follow-ups, HubSpot sync, budget reconciliation, and mortem scheduling.</div>
+
+    <div class="alert-banner">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-text">
+        <div class="alert-title">Accra Stablecoin Conf — 48hr follow-ups overdue (due Jul 11)</div>
+        <div class="alert-sub">M2020 BKK mortem ✅ corrected — completed Apr 29–30 (was wrongly flagged overdue). Bitso mortem ✅ corrected — completed Jun 25 (was wrongly flagged overdue). Both still need HubSpot sync + budget recon. Accra event completed Jul 9 — follow-ups, lead sync, mortem all pending.</div>
+      </div>
+    </div>
+
+    <div class="mortem-grid" id="mortem-cards"></div>
+
+    <!-- Completed / in-progress events -->
+    <div class="card">
+      <div class="card-title">All Completed Events — Close-Out Status</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Region</th>
+              <th>48hr Follow-ups</th>
+              <th>Leads in Sheet</th>
+              <th>HubSpot Synced</th>
+              <th>Mortem Done</th>
+              <th>Overall</th>
+            </tr>
+          </thead>
+          <tbody id="mortem-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB: REVENUE FORECAST
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="tab-forecast" class="section">
+    <div class="section-title">Revenue Forecast — 5× Pipeline ROI Model</div>
+    <div class="section-sub">Event cost → pipeline target → estimated pipeline generated, with ROI tracking per event.</div>
+
+    <div class="forecast-section">
+      <div class="forecast-section-title">📐 ROI Framework</div>
+      <p style="font-size:13px;color:#3730a3;">Every $1 invested in events should generate <strong>$5 in pipeline</strong> (opportunities entered in HubSpot). For Signature events, the minimum absolute pipeline target is $200K. Actual pipeline is tracked post-event once HubSpot sync is complete. Current pipeline figures for completed events are pending sync — total potential H1 pipeline target is <strong>$969.5K</strong> from ~$193.9K committed spend.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">H1 Cost vs Pipeline Target — Signature Events</div>
+        <div class="chart-container chart-md">
+          <canvas id="chartForecastSig"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">2026 Full-Year Pipeline Projection</div>
+        <div class="chart-container chart-md">
+          <canvas id="chartForecastFY"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Per-Event Forecast Table</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Region</th>
+              <th>Tier</th>
+              <th>Cost Invested</th>
+              <th>Pipeline Target (5×)</th>
+              <th>Est. Pipeline Generated</th>
+              <th>Status</th>
+              <th>ROI</th>
+            </tr>
+          </thead>
+          <tbody id="forecast-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2026 Pipeline Totals</div>
+      <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:16px;">
+        <div style="text-align:center; padding:16px; background:var(--indigo-50); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Cost Committed</div>
+          <div style="font-size:22px;font-weight:800;color:var(--indigo);">$193.9K</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--indigo-50); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Pipeline Target</div>
+          <div style="font-size:22px;font-weight:800;color:var(--indigo);">$969.5K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Pending HubSpot sync</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--yellow-bg); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H2 Pipeline Target</div>
+          <div style="font-size:22px;font-weight:800;color:var(--yellow);">$1.25M+</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Est. $250K × 5×</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--green-bg); border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">FY 2026 Grand Total</div>
+          <div style="font-size:22px;font-weight:800;color:var(--green);">$2.22M+</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">~$444K all-in cost</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB: HUBSPOT PIPELINE
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="tab-hubspot" class="section">
+    <div class="section-title">HubSpot Pipeline</div>
+    <div class="section-sub">CRM deal pipeline — FaaS and Direct pipelines, stage breakdown, weighted values, and event attribution.</div>
+
+    <div class="info-note">📌 <strong>Deal-event attribution pending HubSpot sync</strong> for all completed H1 events. Blinq QR → HubSpot pilot launching at Accra Stablecoin Conf (Jul 9). Sample below = 20 recent deals; total CRM has 10,069 deals.</div>
+
+    <div class="hs-summary-grid">
+      <div class="hs-card">
+        <div class="hs-card-label">Sample Deals Shown</div>
+        <div class="hs-card-value">20</div>
+        <div class="hs-card-sub">Recent deals from FaaS + Direct pipelines</div>
+      </div>
+      <div class="hs-card">
+        <div class="hs-card-label">Total CRM Deals</div>
+        <div class="hs-card-value" style="color:#1d4ed8;">10,069</div>
+        <div class="hs-card-sub">Full HubSpot database</div>
+      </div>
+      <div class="hs-card">
+        <div class="hs-card-label">Sample Weighted Pipeline</div>
+        <div class="hs-card-value" id="hs-weighted-total" style="color:var(--green);">—</div>
+        <div class="hs-card-sub">Probability-weighted from sample</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Pipeline by Stage <span class="badge">Sample · 20 deals</span></div>
+        <div class="chart-container chart-md">
+          <canvas id="chartHSStage"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">FaaS vs Direct Pipeline Comparison</div>
+        <div class="chart-container chart-md">
+          <canvas id="chartHSPipeline"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sample Deals — Top 20 by Value <span class="badge">FaaS + Direct</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Deal Name</th>
+              <th>Pipeline</th>
+              <th>Stage</th>
+              <th>Amount</th>
+              <th>Probability</th>
+              <th>Weighted Value</th>
+              <th>Close Date</th>
+            </tr>
+          </thead>
+          <tbody id="hs-deals-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ════════════════════════════════════════ FOOTER ════════════════════════════════════════ -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-sources">
+      <strong>Data Sources:</strong>
+      <span>Notion (2026 Events Command Centre)</span> ·
+      <span>HubSpot CRM (FaaS pipeline: 696061826 · Direct: 750834183)</span> ·
+      <span>Google Sheets (H1 Marketing Budget 2026)</span>
+      <span> · Last synced: <strong>Jul 13, 2026</strong></span>
+    </div>
+    <div class="footer-right">Reap Events Master Dashboard · GTM &amp; Brand Lead: Pearlyn Yeo, GTM &amp; Brand Lead · Internal use only</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ DATA + LOGIC ════════════════════════════════════════ -->
+<script>
+// ─────────────────────────── DATA ───────────────────────────
+
+const EVENTS = [
+  // COMPLETED (H1 2026)
+  { name: "Fintech Mexico (MXFTW)", region: "LATAM", date: "Feb 2026", tier: "Signature", status: "completed", budget_proposed: 50000, budget_actual: 60000, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 300000, pipeline_actual: null, overdue_days: null, notes: "Moon sponsorship + booth + OOH + PR + travel. VIP Dinner 9-10/10, Padel 9-10/10. Stablecoin Mixer 4-5/10 (refund discussion needed). Key prospects: Capa, Payboom, Visa. Leads: high booth volume. Gaps: lead capture (WhatsApp unscalable), booth messaging vague, HK→MX merch shipping failed." },
+  { name: "MERGE Sao Paulo", region: "LATAM", date: "Mar 17–19, 2026", tier: "Growth", status: "completed", budget_proposed: 20000, budget_actual: 18570, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 92850, pipeline_actual: null, overdue_days: null, notes: "Mortem: Mar 31 (Pearlyn, Lucas, Arthur, Vitor). Highest-quality conference attended — fewer but more qualified leads. Strong enterprise prospects: Transfero, Mercado Bitcoin. Padel fast becoming Reap LatAm signature event (inbound FOMO). Side dinner 123 attendees (vs 80 planned). Key learnings: gate merch behind QR scans, explore WhatsApp QR lead scoring, seated format best during/post-conference." },
+  { name: "M2020 BKK", region: "APAC", date: "Apr 21–23, 2026", tier: "Signature", status: "completed", budget_proposed: 55000, budget_actual: 48000, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: 100, leads_actual: null, opps_target: 20, opps_actual: null, pipeline_target: 240000, pipeline_actual: null, overdue_days: null, notes: "Mortem: Apr 29–30. MoneyPot sponsorship + 3x Elephants side events + Visa VIP Luncheon. Daren speaking. Key wins: partner proximity halo (Fireblocks HH), speaking coverage drove 'Reap everywhere' sentiment, Elephants BIN sponsorship signed. Gaps: Day 1-2 ROI front-loaded, booth clarity ('what do you do?'), lead capture inconsistent (Telegram+manual). Still pending: HubSpot sync + budget recon (~$48K)." },
+  { name: "Consensus Miami", region: "North America", date: "May 5–7, 2026", tier: "Signature", status: "closed", budget_proposed: 0, budget_actual: 0, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🔴 CLOSED — Reap did not officially attend. No booth, no sponsorship, no activation. No post-event close-out required." },
+  { name: "Ledger Leaders Week", region: "LATAM", date: "May 18–22, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7500, budget_actual: 7500, mortem_status: "na", budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 37500, pipeline_actual: null, overdue_days: null, notes: "Gold tier ($3,500) + VIP dinner. Jan keynote. No post-event close-out required." },
+  { name: "KBCC Nairobi", region: "Africa", date: "May 14–15, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 25000, pipeline_actual: null, overdue_days: null, notes: "Ian + Kelson. Landing page live. Leads collection + learnings pending from Ian/Kelson." },
+  { name: "Paytech Conf Colombia", region: "LATAM", date: "May 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Low-cost. Lucas." },
+  { name: "Stablecoin Conf by Bitso (CDMX)", region: "LATAM", date: "Jun 15–16, 2026", tier: "Signature", status: "completed", budget_proposed: 41900, budget_actual: 41900, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: 70, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 209500, pipeline_actual: null, overdue_days: null, notes: "Mortem: Jun 25. Jan, Lucas, Vitor, Alberto, Arthur, Daren. Key win: Reap x Visa rooftop (Somma) — Bitso called it 'best side event vibe', Visa leadership impressed. Gaps: Padel high registration but low attendance, misalignment on curated guest list criteria, not enough targeted 1:1 outreach. Still pending: HubSpot sync + budget recon (~$41,900)." },
+  // ACTIVE / IMMINENT
+  { name: "Accra Stablecoin Conf", region: "Africa", date: "Jul 9, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7600, budget_actual: 11000, mortem_status: "pending", budget_reconciled: false, hubspot_synced: false, leads_target: 40, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 38000, pipeline_actual: null, overdue_days: 4, notes: "EVENT COMPLETED Jul 9. Spoke + co-hosted side event + afterparty w/ Chasing Mavericks (Tunnel Lounge, Jul 9 evening). ⚠️ 48hr follow-ups DUE ~Jul 11 — OVERDUE. Blinq QR→HubSpot lead-capture sync pending verification. Budget reconciliation (~$11K) pending. Post-mortem to be scheduled. KPIs: 15 pre-booked meetings, 40 leads, 10 qualified opps, 1 partnership (Chasing Mavericks)." },
+  // UPCOMING / PLANNED
+  { name: "Blockchain Rio", region: "LATAM", date: "Aug 11–13, 2026", tier: "Signature", status: "confirmed", budget_proposed: 35000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: 100, leads_actual: null, opps_target: 12, opps_actual: null, pipeline_target: 175000, pipeline_actual: null, overdue_days: null, notes: "CONFIRMED Jul 6 — Platinum + Kraken Brazil co-sponsorship. VIK doc: Reap net ~$13K post co-sponsorship (tighten from ~half placeholder). Happy Hour ~100 pax co-hosted w/ Kraken Brazil. Venue scouting underway (rooftop, ≤15 min from ExpoRio). Fireside chat (Reap x Kraken) + 2 panels. LATAM ICP outreach starting. KPIs: 25+ pre-booked meetings, 80-120 leads, 10-15 qualified opps, 1 partnership announcement." },
+  { name: "Korea Blockchain Week", region: "APAC", date: "Aug/Sep 2026 · Seoul", tier: "Non-Signature", status: "consideration", budget_proposed: 3000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "VIK doc: excluded (~$3K speaking slot only, below VIK threshold) — can proceed on cash if desired. Go/no-go + tier/budget scoping needed. Evaluate Payward co-activation. Major APAC event — scope before Aug." },
+  { name: "Stablecon USA (D.C.)", region: "North America", date: "Sep 9–11, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pairs with M2020 USA for Q4 US blitz." },
+  { name: "European Blockchain Conv (Barcelona)", region: "RoW", date: "Sep 16–17, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "First Kraken co-branding trial (Tier 1 per H2 strategy)." },
+  { name: "Tech Safari Summit", region: "Africa", date: "Sep 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Coordinate with Accra learnings." },
+  { name: "Seamless Africa", region: "Africa", date: "Sep 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Evaluate ICP density." },
+  { name: "Sibos Miami", region: "North America", date: "Sep 28–Oct 1, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "TradFi institutional. Only if Payward confirms presence." },
+  { name: "Token 2049 SG", region: "APAC", date: "Oct 2–11, 2026 · Singapore", tier: "Signature", status: "confirmed", budget_proposed: 40000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Full proposal drafted 9 Jul: Agentic Summit (Oct 5/6) + Payward ecosystem lounge (Oct 7) + FaaS closed-door side event + Daren x Arjun PR + optional guerilla activation. MAS/regulatory check in progress. VIK ask ~$40K (Tier 1). Tier/budget scoping due before Aug. Owners: Pearlyn, Sue Ann, Rachel." },
+  { name: "Money20/20 USA", region: "North America", date: "Oct 2026", tier: "Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Scope tier + budget. Payward co-activation." },
+  { name: "ETH Brasil", region: "LATAM", date: "Oct 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Arthur, Vitor. Attend or skip?" },
+  { name: "Tech Safari Ecosystem Mixer", region: "Africa", date: "Oct 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Side-event co-host decision." },
+  { name: "LABITCONF", region: "LATAM", date: "Oct 30–31, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 2 per H2 strategy." },
+  { name: "Africa Stablecoin Summit", region: "Africa", date: "Nov 2026", tier: "Signature", status: "consideration", budget_proposed: 28000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Reap's signature Africa moment. Ian. VIK doc: ~$28K stage sponsorship (Tier 2) — flagged as judgment call on whether it goes in the room. Still needs go/no-go decision." },
+  { name: "HK Fintech Week", region: "APAC", date: "Nov 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 25000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pearlyn, Sue Ann, Rachel. VIK ask ~$25K (sponsorship share + activation, Tier 2)." },
+  { name: "SG Fintech Week", region: "APAC", date: "Nov 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 20000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pearlyn, Sue Ann, Rachel. VIK ask ~$20K (sponsorship share, Tier 2). Confirm = Singapore FinTech Festival." },
+  { name: "SALT London", region: "RoW", date: "Nov 3–4, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 1 per H2 strategy." },
+  { name: "BSL Colombia", region: "LATAM", date: "Nov 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Lucas. Go/no-go needed." },
+  { name: "Solana Breakpoint", region: "RoW", date: "Nov 2026", tier: "Non-Signature", status: "planning", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
+  { name: "Web Summit Lisbon", region: "RoW", date: "Nov 9–12, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 2 per H2 strategy." },
+  { name: "Blockchain Life Dubai", region: "RoW", date: "Dec 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
+  { name: "Affiliate World Forum (BKK)", region: "RoW", date: "Dec 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ Cancún, total ~$32.4K. Dec 2026." },
+  { name: "Affiliate World Forum (Cancun)", region: "LATAM", date: "Sep 7–8, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ BKK, total ~$32.4K. ⚠️ VIK discrepancy: VIK doc asks $50K (booth ~$27K + side event + activation, Tier 1) — larger scope. Confirm whether Visa funding replaces or upgrades before Visa conversation. SOW pending sign-off w/ Visa. Owners: Pearlyn, Mindaugas, Anushka." },
+  // NEW EVENTS (added Jul 13)
+  { name: "Labit Conf CDMX", region: "LATAM", date: "Aug 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Go/no-go + format decision needed (walk floor / meetings / side event). Owners: Sales (Lucas, Jan), Marketing (Pearlyn)." },
+  { name: "Token Americas MX", region: "LATAM", date: "Aug 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Attend or skip? Decide format + owner. Sales (Jan, Lucas), Marketing (Pearlyn)." },
+  { name: "Argentina LATAM Digital Assets Conf", region: "LATAM", date: "Jul 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 5000, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Under consideration. Sales (Lucas, Jan)." },
+];
+
+const HUBSPOT_DEALS = [
+  { name: "CollectFx", pipeline: "FaaS", stage: "Prospect", amount: 2000000, probability: 0.10, close_date: "2026-09-06" },
+  { name: "PayCan", pipeline: "FaaS", stage: "Qualification", amount: 5000000, probability: 0.20, close_date: "2026-09-04" },
+  { name: "Revolut", pipeline: "FaaS", stage: "Qualification", amount: 10000000, probability: 0.20, close_date: "2026-09-04" },
+  { name: "Sinku", pipeline: "FaaS", stage: "Proposal", amount: 2000000, probability: 0.30, close_date: "2026-08-31" },
+  { name: "Arkin", pipeline: "FaaS", stage: "Qualification", amount: 1000000, probability: 0.20, close_date: "2026-09-04" },
+  { name: "ParkPay (ParkFirst Group)", pipeline: "FaaS", stage: "Qualification", amount: 1000000, probability: 0.20, close_date: "2026-09-04" },
+  { name: "Peach Payments", pipeline: "FaaS", stage: "Qualification", amount: 5000000, probability: 0.20, close_date: "2026-09-04" },
+  { name: "BMONI", pipeline: "FaaS", stage: "Onboarding", amount: 12500000, probability: 0.80, close_date: "2026-08-15" },
+  { name: "Horus Labs", pipeline: "Direct", stage: "Qualification", amount: 120000, probability: 0.10, close_date: "2026-07-17" },
+  { name: "Entropie", pipeline: "Direct", stage: "Qualification", amount: 120000, probability: 0.10, close_date: "2026-07-17" },
+  { name: "Raxio", pipeline: "FaaS", stage: "Qualification", amount: 2000000, probability: 0.20, close_date: "2026-08-31" },
+  { name: "Nebula Agency", pipeline: "Direct", stage: "Qualification", amount: 100000, probability: 0.10, close_date: "2026-07-14" },
+  { name: "Metacomp", pipeline: "FaaS", stage: "Qualification", amount: 2000000, probability: 0.20, close_date: "2026-08-29" },
+  { name: "Golden Ryu", pipeline: "Direct", stage: "Qualification", amount: 10000, probability: 0.10, close_date: "2026-07-13" },
+  { name: "Epay.com", pipeline: "FaaS", stage: "Qualification", amount: 2000000, probability: 0.20, close_date: "2026-08-08" },
+  { name: "Theo.xyz", pipeline: "FaaS", stage: "Qualification", amount: 10000000, probability: 0.20, close_date: "2026-08-08" },
+  { name: "Deciphr", pipeline: "FaaS", stage: "Qualification", amount: 3000000, probability: 0.20, close_date: "2026-08-28" },
+  { name: "Tirnu", pipeline: "FaaS", stage: "Qualification", amount: 10000000, probability: 0.20, close_date: "2026-08-25" },
+  { name: "Credium", pipeline: "FaaS", stage: "Qualification", amount: 1000000, probability: 0.20, close_date: "2026-08-05" },
+];
+
+// ─────────────────────────── HELPERS ───────────────────────────
+
+function fmt(n) {
+  if (n == null) return '—';
+  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + (n / 1000).toFixed(1) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+function fmtFull(n) {
+  if (n == null) return '—';
+  return '$' + n.toLocaleString();
+}
+
+function statusBadge(s) {
+  const map = {
+    completed: ['badge-completed', '✓ Completed'],
+    confirmed: ['badge-confirmed', '● Confirmed'],
+    planning: ['badge-planning', '◷ Planning'],
+    consideration: ['badge-consideration', '◌ Consideration'],
+    tbc: ['badge-tbc', '? TBC'],
+    closed: ['badge-tbc', '✕ Closed'],
+  };
+  const [cls, label] = map[s] || ['badge-tbc', s];
+  return `<span class="badge-status ${cls}">${label}</span>`;
+}
+
+function tierBadge(t) {
+  if (t === 'Signature') return `<span class="badge-tier-sig">Signature</span>`;
+  if (t === 'Growth') return `<span class="badge-tier-growth">Growth</span>`;
+  return `<span class="badge-tier-non">Non-Sig</span>`;
+}
+
+function checkIcon(val) {
+  if (val === true || val === 'done') return '<span class="check-icon-done">✓</span>';
+  if (val === false || val === 'pending') return '<span class="check-icon-pending">✗</span>';
+  return '<span class="icon-pending">—</span>';
+}
+
+function stagePill(s) {
+  const cls = {
+    'Prospect': 'stage-prospect',
+    'Qualification': 'stage-qualification',
+    'Proposal': 'stage-proposal',
+    'Onboarding': 'stage-onboarding',
+    'Signed Up': 'stage-signedup',
+  }[s] || 'stage-other';
+  return `<span class="stage-pill ${cls}">${s}</span>`;
+}
+
+// ─────────────────────────── TAB SWITCHING ───────────────────────────
+
+const chartsBuilt = {};
+
+function switchTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.getAttribute('onclick') === `switchTab('${id}')`) b.classList.add('active');
+  });
+  if (!chartsBuilt[id]) {
+    chartsBuilt[id] = true;
+    buildChartsFor(id);
+  }
+}
+
+// ─────────────────────────── ROSTER TABLE ───────────────────────────
+
+function buildRosterTable(filter = 'all') {
+  const body = document.getElementById('roster-body');
+  let rows = EVENTS;
+  if (filter === 'completed') rows = EVENTS.filter(e => e.status === 'completed');
+  else if (filter === 'active') rows = EVENTS.filter(e => ['confirmed', 'planning'].includes(e.status));
+  else if (['LATAM','APAC','Africa','North America','RoW'].includes(filter)) rows = EVENTS.filter(e => e.region === filter);
+
+  body.innerHTML = rows.map(e => {
+    const overdueTag = e.overdue_days ? `<span class="overdue-tag">🔴 ${e.overdue_days}d overdue</span>` : '';
+    const mortemIcon = e.mortem_status === 'done' ? '<span class="icon-ok">✓ Done</span>' :
+                       e.mortem_status === 'pending' ? `<span class="icon-warn">✗ Pending</span> ${overdueTag}` : '—';
+    const hsIcon = e.hubspot_synced ? '<span class="synced-ok">✓ Synced</span>' :
+                   e.status === 'completed' ? '<span class="pending-sync">⏳ Pending</span>' : '—';
+    return `<tr>
+      <td><strong>${e.name}</strong></td>
+      <td>${e.region}</td>
+      <td style="white-space:nowrap;font-size:12px;">${e.date}</td>
+      <td>${tierBadge(e.tier)}</td>
+      <td>${statusBadge(e.status)}</td>
+      <td>${fmt(e.budget_proposed)}</td>
+      <td>${fmt(e.budget_actual)}</td>
+      <td>${fmt(e.pipeline_target)}</td>
+      <td>${hsIcon}</td>
+      <td>${mortemIcon}</td>
+      <td class="notes-cell">${e.notes || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterRoster(filter, btn) {
+  document.querySelectorAll('#roster-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildRosterTable(filter);
+}
+
+// ─────────────────────────── BUDGET TABLE ───────────────────────────
+
+function buildBudgetTables() {
+  const h1Events = EVENTS.filter(e => e.status === 'completed');
+  const body = document.getElementById('budget-h1-body');
+  let totalProposed = 0, totalActual = 0;
+  body.innerHTML = h1Events.map(e => {
+    const prop = e.budget_proposed || 0;
+    const act = e.budget_actual || 0;
+    const variance = e.budget_actual != null ? (prop - act) : null;
+    const varClass = variance == null ? '' : variance >= 0 ? 'var-pos' : 'var-neg';
+    const varStr = variance == null ? '—' : (variance >= 0 ? `<span class="${varClass}">-${fmt(variance)} under</span>` : `<span class="${varClass}">+${fmt(Math.abs(variance))} over</span>`);
+    totalProposed += prop;
+    totalActual += (e.budget_actual || e.budget_proposed || 0);
+    return `<tr>
+      <td><strong>${e.name}</strong></td>
+      <td>${fmt(prop)}</td>
+      <td>${e.budget_actual != null ? fmt(e.budget_actual) : '<span style="color:var(--text-muted)">TBC</span>'}</td>
+      <td>${varStr}</td>
+    </tr>`;
+  }).join('');
+  // Total row
+  body.innerHTML += `<tr class="total-row">
+    <td>TOTAL H1 2026</td>
+    <td>${fmt(totalProposed)}</td>
+    <td>${fmt(totalActual)}</td>
+    <td>—</td>
+  </tr>`;
+
+  // H2 table
+  const h2Events = EVENTS.filter(e => !['completed'].includes(e.status));
+  const h2body = document.getElementById('budget-h2-body');
+  const gonogo = { confirmed: '✓ Go', planning: '◷ In Review', consideration: '? Evaluate', tbc: '— TBC' };
+  h2body.innerHTML = h2Events.map(e => {
+    const gng = gonogo[e.status] || '— TBC';
+    const estBudget = e.budget_proposed ? fmt(e.budget_proposed) : '<span style="color:var(--text-muted);">TBD</span>';
+    const pipeEst = e.pipeline_target ? fmt(e.pipeline_target) : '<span style="color:var(--text-muted);">TBD</span>';
+    return `<tr>
+      <td><strong>${e.name}</strong></td>
+      <td>${e.region}</td>
+      <td>${tierBadge(e.tier)}</td>
+      <td>${statusBadge(e.status)}</td>
+      <td>${estBudget}</td>
+      <td>${pipeEst}</td>
+      <td style="font-size:12px;font-weight:600;color:var(--text-muted);">${gng}</td>
+      <td class="notes-cell">${e.notes}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────── POST-MORTEM CARDS ───────────────────────────
+
+const OVERDUE_EVENTS = [
+  {
+    name: 'Accra Stablecoin Conf',
+    region: 'Africa — Jul 9, 2026',
+    days: 4,
+    budget: '~$11K',
+    checks: [
+      { label: '① 48hr Follow-ups sent (DUE Jul 11 — OVERDUE)', done: false },
+      { label: '② Blinq QR → HubSpot lead-capture sync verified', done: false },
+      { label: '③ Leads entered in tracking sheet (target: 40)', done: false },
+      { label: '④ Budget reconciled (~$11K)', done: false },
+      { label: '⑤ Post-mortem scheduled', done: false },
+    ]
+  },
+  {
+    name: 'M2020 BKK — Pending Verification',
+    region: 'APAC — Apr 21–23, 2026',
+    days: null,
+    budget: '$48K',
+    checks: [
+      { label: '① Post-mortem completed ✅ (Apr 29–30)', done: true },
+      { label: '② 48hr Follow-ups sent ✅', done: true },
+      { label: '③ HubSpot synced (100 leads, 20 opps target)', done: false },
+      { label: '④ Budget reconciled (~$48K)', done: false },
+      { label: '⑤ Leads reconciliation in sheet', done: false },
+    ]
+  },
+  {
+    name: 'Stablecoin Conf by Bitso — Pending Verification',
+    region: 'LATAM — Jun 15–16, 2026',
+    days: null,
+    budget: '$41.9K',
+    checks: [
+      { label: '① Post-mortem completed ✅ (Jun 25)', done: true },
+      { label: '② Event wrap recap in progress ✅ (Jun 29)', done: true },
+      { label: '③ HubSpot synced (70 leads, 10 opps target)', done: false },
+      { label: '④ Budget reconciled ($41.9K)', done: false },
+      { label: '⑤ Stable World Cup CDMX outcome confirmed', done: false },
+    ]
+  }
+];
+
+function buildMortemCards() {
+  const container = document.getElementById('mortem-cards');
+  container.innerHTML = OVERDUE_EVENTS.map(ev => `
+    <div class="mortem-card" style="${ev.days == null ? 'border-top-color:var(--orange)' : ''}">
+      <div class="mortem-header">
+        <div>
+          <div class="mortem-name">${ev.name}</div>
+          <div class="mortem-region">${ev.region} · Budget: ${ev.budget}</div>
+        </div>
+        <div class="mortem-days" style="${ev.days == null ? 'background:var(--orange-bg)' : ''}">
+          <div class="mortem-days-num" style="${ev.days == null ? 'color:var(--orange);font-size:18px;' : ''}">${ev.days != null ? ev.days : '✓ Mortem Done'}</div>
+          <div class="mortem-days-label" style="${ev.days == null ? 'color:var(--orange)' : ''}">${ev.days != null ? 'Days Since Event' : 'Pending Verifications'}</div>
+        </div>
+      </div>
+      <ul class="checklist">
+        ${ev.checks.map(c => `
+          <li>
+            <span class="${c.done ? 'check-icon-done' : 'check-icon-pending'}">${c.done ? '✓' : '✗'}</span>
+            <span class="check-label${!c.done ? ' overdue' : ''}">${c.label}</span>
+            ${!c.done ? `<a href="#" class="check-action" onclick="return false;">Action →</a>` : ''}
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `).join('');
+
+  // Completed post-mortems section — insert after the urgency cards grid
+  const completedSection = document.createElement('div');
+  completedSection.style.marginBottom = '20px';
+  completedSection.innerHTML = `
+    <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+      <span>✅ Completed Post-Mortems</span>
+    </div>
+    <div style="background:var(--white);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--green);margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">MERGE Sao Paulo</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Mar 17–19, 2026 &nbsp;·&nbsp; LATAM &nbsp;·&nbsp; <span style="background:#e0f2fe;color:#0369a1;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;">Growth</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="badge-status badge-completed">✓ Completed</span>
+          <a href="https://www.notion.so/reap/Merge-Post-Mortem-3347e193475080599683c0311ea7f080" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;border:1px solid var(--indigo-200);padding:4px 10px;border-radius:6px;">📄 View Retro →</a>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:16px 18px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Key Wins</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#166534;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Highest-quality conference attended — fewer but more qualified leads, strong ICP resonance</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Strong enterprise prospects: Transfero, Mercado Bitcoin</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Padel fast becoming Reap LatAm signature event — inbound FOMO from prospects</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Side dinner (Tether + Avenia) — 123 attendees vs 80 planned; seated format worked well post-conference</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Gaps</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#92400e;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>QR code scanning needs incentivisation — merch should be gated behind scans</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Multi-event attribution still a challenge; HubSpot sync pending</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--indigo-dark);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Strategic Actions</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#3730a3;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Gate merch behind QR scans (tiered merch levels)</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Explore WhatsApp QR lead qualification (CrossMint-style) for automated scoring</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Expand Padel to HK, Singapore, USA, Bangkok; explore sponsorship partners</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Investigate prepaid card giveaway compliance for Brazil + LatAm</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--white);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--green);margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">M2020 BKK</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Apr 21–23, 2026 &nbsp;·&nbsp; APAC &nbsp;·&nbsp; <span style="background:var(--indigo-100);color:var(--indigo);padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;">Signature</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="badge-status badge-completed">✓ Completed</span>
+          <a href="https://www.notion.so/reap/M2020-BKK-Event-Post-mortem-3517e1934750808c9441eaa63e444442" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;border:1px solid var(--indigo-200);padding:4px 10px;border-radius:6px;">📄 View Retro →</a>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:16px 18px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Key Wins</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#166534;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Partner proximity halo effect — Fireblocks HH + Visa VIP Lunch drove high-quality conversations</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Multi-slot speaking (panels, fireside chats) created sustained brand presence — "Reap being everywhere"</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Audience ICP fit strong — Connect + CaaS resonance, cross-ask between product lines</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Elephants relationship converted — new BIN sponsorship signed + Connect cross-sell potential</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Gaps</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#92400e;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>ROI front-loaded — diminishing returns Day 2–3; concentrate exec presence Day 1–2 next time</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Booth clarity still weak — "What do you do?" came up consistently; need 5-second message system</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Meeting room blocked main booth space; modular zones needed</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Lead capture inconsistent — Telegram + manual logging doesn't scale; need single QR-to-form mechanism</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--indigo-dark);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Strategic Actions</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#3730a3;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Secure 1–2 anchor partners + co-locate activations for all flagship events</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Pilot "nearby HQ" model (coffee shop/lobby takeover) to lower cost per qualified meeting</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Standardise lead capture: QR → form, owner-of-record rules, 3–5 day post-event SLA</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Launch HubSpot persona-based follow-up sequences (2–3 product-line drips with clear CTAs)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--white);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--green);margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Stablecoin Conference by Bitso (CDMX)</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Jun 15–16, 2026 &nbsp;·&nbsp; LATAM &nbsp;·&nbsp; <span style="background:var(--indigo-100);color:var(--indigo);padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;">Signature</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="badge-status badge-completed">✓ Completed</span>
+          <a href="https://www.notion.so/reap/Stablecoin-Conference-by-Bitso-Post-Mortem-39c7e1934750805b83b4ed3ce2140ef6" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;border:1px solid var(--indigo-200);padding:4px 10px;border-radius:6px;">📄 View Retro →</a>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:16px 18px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Key Wins</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#166534;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Reap x Visa rooftop (Somma) — Bitso called it "best side event vibe"; Visa leadership very impressed</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>World Cup match created organic energy — watching + networking worked well together</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Gaps</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#92400e;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Padel: high registration, low attendance — experience didn't feel premium, no curated accept list</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Misalignment with Monato team on acceptance criteria — attendees accepted randomly</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Not enough targeted 1:1 outreach for partners + sales pipeline; registrations skewed random</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Timing conflict — many left Wednesday morning + World Cup matches reduced attendance</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--indigo-dark);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Strategic Actions</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#3730a3;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Curated guest list + clear acceptance criteria for all future side events (keep it premium)</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Align with event partners upfront on who should be accepted and why</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Structured 1:1 invite plan for priority attendees (partners + pipeline) before any event</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Avoid scheduling conflicts with major departures + match schedules (or design around them)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--white);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--green);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Fintech Mexico (MXFTW)</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Feb 2026 &nbsp;·&nbsp; LATAM &nbsp;·&nbsp; <span style="background:var(--indigo-100);color:var(--indigo);padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;">Signature</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="badge-status badge-completed">✓ Completed</span>
+          <a href="https://www.notion.so/reap/MXFTW-Retro-3147e193475080a29d9bfd866547824a" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;border:1px solid var(--indigo-200);padding:4px 10px;border-radius:6px;">📄 View Retro →</a>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:16px 18px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Key Wins</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#166534;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>VIP Dinner — rated 9–10/10, est. $2–3K spend, strong relationship-building</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Padel event — rated 9–10/10, excellent format for casual networking</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>High lead generation at booth; strengthened prospects Capa, Payboom, Visa</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Gaps</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#92400e;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Stablecoin Mixer underdelivered — rated 4–5/10, ~$5K cost, 6 co-sponsors diluted Reap's presence; refund discussion pending</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Lead capture via WhatsApp was unscalable and unstructured</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Booth messaging too vague — "stablecoin enabled" unclear to prospects</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>HK→MX merch shipping failed; merchandise did not arrive in time</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--indigo-dark);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Strategic Actions</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#3730a3;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Launch exclusive bi-monthly LATAM dinner series (unconventional venues, waitlist, FOMO effect)</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Redesign booth banners with clear callouts: "Cross-border payments, card issuing, global dollar accounts"</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Automate lead capture (replace WhatsApp with Blinq QR → HubSpot)</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Source merch locally for LATAM events to avoid international shipping failures</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+  container.parentNode.insertBefore(completedSection, container.nextSibling);
+
+  // All completed events mortem table
+  const h1 = EVENTS.filter(e => e.status === 'completed');
+  const tbody = document.getElementById('mortem-table-body');
+  tbody.innerHTML = h1.map(e => {
+    const isOverdue = e.overdue_days != null;
+    const done = e.mortem_status === 'done';
+    const na = e.mortem_status === 'na';
+    const followUp = (done || na) ? true : false;
+    const leadsSheet = (done || na) ? true : false;
+    const hsSync = e.hubspot_synced;
+    const budgetRec = e.budget_reconciled === true;
+    const mortemDone = done;
+    const overallBadge = na
+      ? '<span class="badge-status badge-completed">✓ Closed</span>'
+      : done
+        ? '<span class="badge-status badge-completed">✓ Closed</span>'
+        : isOverdue
+          ? `<span class="badge-status" style="background:#fee2e2;color:#991b1b;">🔴 ${e.overdue_days}d Since Event</span>`
+          : '<span class="badge-status badge-tbc">⏳ Pending</span>';
+    // Show Notion links for events with retros
+    const retroLinks = {
+      'Fintech Mexico (MXFTW)': 'https://www.notion.so/reap/MXFTW-Retro-3147e193475080a29d9bfd866547824a',
+      'MERGE Sao Paulo': 'https://www.notion.so/reap/Merge-Post-Mortem-3347e193475080599683c0311ea7f080',
+      'M2020 BKK': 'https://www.notion.so/reap/M2020-BKK-Event-Post-mortem-3517e1934750808c9441eaa63e444442',
+      'Stablecoin Conf by Bitso (CDMX)': 'https://www.notion.so/reap/Stablecoin-Conference-by-Bitso-Post-Mortem-39c7e1934750805b83b4ed3ce2140ef6',
+    };
+    const retroUrl = retroLinks[e.name];
+    const nameCell = retroUrl
+      ? `<strong>${e.name}</strong> <a href="${retroUrl}" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;margin-left:6px;">📄 Retro</a>`
+      : `<strong>${e.name}</strong>`;
+    const mortemCell = retroUrl
+      ? `<a href="${retroUrl}" target="_blank" style="color:var(--green);font-weight:600;font-size:12px;text-decoration:none;">✅ Done</a>`
+      : na
+        ? '<span style="color:var(--text-muted);font-size:12px;">N/A</span>'
+        : checkIcon(mortemDone);
+    return `<tr>
+      <td>${nameCell}</td>
+      <td style="font-size:12px;">${e.date}</td>
+      <td>${e.region}</td>
+      <td style="text-align:center;">${checkIcon(followUp)}</td>
+      <td style="text-align:center;">${checkIcon(leadsSheet)}</td>
+      <td style="text-align:center;">${checkIcon(hsSync)}</td>
+      <td style="text-align:center;">${mortemCell}</td>
+      <td>${overallBadge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────── FORECAST TABLE ───────────────────────────
+
+function buildForecastTable() {
+  const body = document.getElementById('forecast-body');
+  const rows = EVENTS.filter(e => e.budget_proposed || e.pipeline_target);
+  body.innerHTML = rows.map(e => {
+    const cost = e.budget_actual || e.budget_proposed;
+    const pipeTarget = e.pipeline_target || (cost ? cost * 5 : null);
+    const pipeActual = e.pipeline_actual;
+    const roi = pipeActual && cost ? (pipeActual / cost).toFixed(1) + 'x' : null;
+    const roiPill = pipeActual
+      ? (parseFloat(roi) >= 5
+          ? `<span class="roi-pill roi-good">${roi} ✓</span>`
+          : `<span class="roi-pill roi-na">${roi}</span>`)
+      : e.status === 'completed'
+        ? '<span class="roi-pill roi-pending">⏳ Pending sync</span>'
+        : '<span class="roi-pill roi-na">TBD</span>';
+    const pipeDisplay = pipeActual
+      ? fmt(pipeActual)
+      : e.status === 'completed'
+        ? '<span style="color:var(--text-muted);font-size:12px;">Pending HubSpot sync</span>'
+        : '<span style="color:var(--text-muted);font-size:12px;">—</span>';
+    return `<tr>
+      <td><strong>${e.name}</strong></td>
+      <td>${e.region}</td>
+      <td>${tierBadge(e.tier)}</td>
+      <td>${cost ? fmt(cost) : '—'}</td>
+      <td>${pipeTarget ? fmt(pipeTarget) : '—'}</td>
+      <td>${pipeDisplay}</td>
+      <td>${statusBadge(e.status)}</td>
+      <td>${roiPill}</td>
+    </tr>`;
+  }).join('');
+
+  // Grand total row
+  const totalCost = rows.reduce((s, e) => s + (e.budget_actual || e.budget_proposed || 0), 0);
+  const totalPipeTarget = rows.reduce((s, e) => s + (e.pipeline_target || 0), 0);
+  body.innerHTML += `<tr class="total-row">
+    <td colspan="3">TOTAL (events with budget data)</td>
+    <td>${fmt(totalCost)}</td>
+    <td>${fmt(totalPipeTarget)}</td>
+    <td><span style="color:var(--text-muted);font-size:12px;">Pending HubSpot sync</span></td>
+    <td>—</td>
+    <td>—</td>
+  </tr>`;
+}
+
+// ─────────────────────────── HUBSPOT TABLE ───────────────────────────
+
+function buildHubspotTable() {
+  const sorted = [...HUBSPOT_DEALS].sort((a, b) => b.amount * b.probability - a.amount * a.probability);
+  const totalWeighted = HUBSPOT_DEALS.reduce((s, d) => s + d.amount * d.probability, 0);
+  document.getElementById('hs-weighted-total').textContent = fmt(totalWeighted);
+
+  const body = document.getElementById('hs-deals-body');
+  body.innerHTML = sorted.map(d => {
+    const weighted = d.amount * d.probability;
+    const pipelineBadge = d.pipeline === 'FaaS'
+      ? '<span style="background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">FaaS</span>'
+      : '<span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">Direct</span>';
+    return `<tr>
+      <td><strong>${d.name}</strong></td>
+      <td>${pipelineBadge}</td>
+      <td>${stagePill(d.stage)}</td>
+      <td>${fmt(d.amount)}</td>
+      <td>${(d.probability * 100).toFixed(0)}%</td>
+      <td style="font-weight:700;color:var(--indigo);">${fmt(weighted)}</td>
+      <td style="font-size:12px;">${d.close_date}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────── TIMELINE ───────────────────────────
+
+function buildTimeline() {
+  const quarters = [
+    { label: 'Q1 — Jan/Feb/Mar 2026', cls: 'tq-q1', months: ['Jan','Feb','Mar'] },
+    { label: 'Q2 — Apr/May/Jun 2026', cls: 'tq-q2', months: ['Apr','May','Jun'] },
+    { label: 'Q3 — Jul/Aug/Sep 2026', cls: 'tq-q3', months: ['Jul','Aug','Sep'] },
+    { label: 'Q4 — Oct/Nov/Dec 2026', cls: 'tq-q4', months: ['Oct','Nov','Dec'] },
+  ];
+  const strip = document.getElementById('timeline-strip');
+  strip.innerHTML = quarters.map(q => {
+    const qEvents = EVENTS.filter(e => {
+      const d = e.date;
+      return q.months.some(m => d.includes(m));
+    });
+    return `<div class="timeline-quarter">
+      <div class="tq-header ${q.cls}">${q.label}</div>
+      <div class="tq-events">
+        ${qEvents.length === 0 ? '<span style="font-size:11px;color:#9ca3af;">No events</span>' :
+          qEvents.map(e => `<div class="tq-event tq-event-${e.status}" title="${e.name} — ${e.date}">${e.name}</div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────── CHARTS ───────────────────────────
+
+const CHART_DEFAULTS = {
+  font: { family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size: 12 },
+};
+
+function buildChartsFor(tab) {
+  if (tab === 'overview') {
+    buildChartStatus();
+    buildChartBudgetRegion();
+  } else if (tab === 'budget') {
+    buildChartBudgetCompare();
+  } else if (tab === 'forecast') {
+    buildChartForecastSig();
+    buildChartForecastFY();
+  } else if (tab === 'hubspot') {
+    buildChartHSStage();
+    buildChartHSPipeline();
+  }
+}
+
+function buildChartStatus() {
+  const counts = { completed: 0, confirmed: 0, planning: 0, consideration: 0, tbc: 0 };
+  EVENTS.forEach(e => counts[e.status]++);
+  new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed (8)', 'Confirmed (6)', 'Planning (1)', 'Consideration (8)', 'TBC (6)'],
+      datasets: [{
+        data: [counts.completed, counts.confirmed, counts.planning, counts.consideration, counts.tbc],
+        backgroundColor: ['#16a34a', '#2563eb', '#ca8a04', '#ea580c', '#9ca3af'],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { padding: 14, font: CHART_DEFAULTS.font, usePointStyle: true, pointStyleWidth: 10 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} events` } }
+      },
+      cutout: '62%',
+    }
+  });
+}
+
+function buildChartBudgetRegion() {
+  new Chart(document.getElementById('chartBudgetRegion'), {
+    type: 'bar',
+    data: {
+      labels: ['LATAM', 'APAC', 'North America', 'Africa', 'RoW'],
+      datasets: [{
+        label: 'H1 Budget Committed ($K)',
+        data: [115, 48, 23, 13, 0],
+        backgroundColor: ['#4f46e5','#6366f1','#818cf8','#a5b4fc','#c7d2fe'],
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#f3f4f6' }, ticks: { callback: v => '$' + v + 'K', font: CHART_DEFAULTS.font } },
+        y: { grid: { display: false }, ticks: { font: CHART_DEFAULTS.font } }
+      }
+    }
+  });
+}
+
+function buildChartBudgetCompare() {
+  const h1 = EVENTS.filter(e => e.status === 'completed' && e.budget_proposed);
+  const labels = h1.map(e => e.name.length > 20 ? e.name.substring(0,18)+'…' : e.name);
+  new Chart(document.getElementById('chartBudgetCompare'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Proposed', data: h1.map(e => e.budget_proposed), backgroundColor: '#c7d2fe', borderRadius: 4 },
+        { label: 'Actual', data: h1.map(e => e.budget_actual || e.budget_proposed * 0.9), backgroundColor: '#4f46e5', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: CHART_DEFAULTS.font, usePointStyle: true } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 30 } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K', font: CHART_DEFAULTS.font } }
+      }
+    }
+  });
+}
+
+function buildChartForecastSig() {
+  const sig = EVENTS.filter(e => e.tier === 'Signature' && e.status === 'completed');
+  const labels = sig.map(e => e.name.substring(0,18));
+  new Chart(document.getElementById('chartForecastSig'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Cost Invested', data: sig.map(e => e.budget_actual || e.budget_proposed), backgroundColor: '#c7d2fe', borderRadius: 4 },
+        { label: 'Pipeline Target (5×)', data: sig.map(e => e.pipeline_target), backgroundColor: '#4f46e5', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: CHART_DEFAULTS.font, usePointStyle: true } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 30 } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K', font: CHART_DEFAULTS.font } }
+      }
+    }
+  });
+}
+
+function buildChartForecastFY() {
+  new Chart(document.getElementById('chartForecastFY'), {
+    type: 'bar',
+    data: {
+      labels: ['H1 2026 Cost', 'H1 Pipeline Target', 'H2 2026 Est. Cost', 'H2 Pipeline Target', 'FY Total Cost', 'FY Pipeline Target'],
+      datasets: [{
+        label: 'Amount ($)',
+        data: [193900, 969500, 250000, 1250000, 443900, 2219500],
+        backgroundColor: ['#c7d2fe','#4f46e5','#bfdbfe','#2563eb','#a5b4fc','#1d4ed8'],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#f3f4f6' }, ticks: { callback: v => v >= 1000000 ? '$' + (v/1000000).toFixed(1) + 'M' : '$' + (v/1000).toFixed(0) + 'K', font: CHART_DEFAULTS.font } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function buildChartHSStage() {
+  const stageCounts = {};
+  HUBSPOT_DEALS.forEach(d => { stageCounts[d.stage] = (stageCounts[d.stage] || 0) + 1; });
+  new Chart(document.getElementById('chartHSStage'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(stageCounts),
+      datasets: [{
+        data: Object.values(stageCounts),
+        backgroundColor: ['#7c3aed','#2563eb','#0369a1','#059669','#ca8a04'],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { padding: 14, font: CHART_DEFAULTS.font, usePointStyle: true } }
+      },
+      cutout: '60%',
+    }
+  });
+}
+
+function buildChartHSPipeline() {
+  const faasDeals = HUBSPOT_DEALS.filter(d => d.pipeline === 'FaaS');
+  const directDeals = HUBSPOT_DEALS.filter(d => d.pipeline === 'Direct');
+  const faasTotal = faasDeals.reduce((s, d) => s + d.amount, 0);
+  const directTotal = directDeals.reduce((s, d) => s + d.amount, 0);
+  const faasWeighted = faasDeals.reduce((s, d) => s + d.amount * d.probability, 0);
+  const directWeighted = directDeals.reduce((s, d) => s + d.amount * d.probability, 0);
+  new Chart(document.getElementById('chartHSPipeline'), {
+    type: 'bar',
+    data: {
+      labels: ['FaaS Pipeline', 'Direct Pipeline'],
+      datasets: [
+        { label: 'Total Amount', data: [faasTotal, directTotal], backgroundColor: ['#c7d2fe','#bfdbfe'], borderRadius: 6 },
+        { label: 'Weighted Amount', data: [faasWeighted, directWeighted], backgroundColor: ['#4f46e5','#2563eb'], borderRadius: 6 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: CHART_DEFAULTS.font, usePointStyle: true } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: CHART_DEFAULTS.font } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { callback: v => v >= 1000000 ? '$' + (v/1000000).toFixed(0) + 'M' : '$' + (v/1000).toFixed(0) + 'K', font: CHART_DEFAULTS.font } }
+      }
+    }
+  });
+}
+
+// ─────────────────────────── INIT ───────────────────────────
+
+function init() {
+  buildRosterTable();
+  buildBudgetTables();
+  buildMortemCards();
+  buildForecastTable();
+  buildHubspotTable();
+  buildTimeline();
+  // Build overview charts immediately since it's the default tab
+  chartsBuilt['overview'] = true;
+  buildChartsFor('overview');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
