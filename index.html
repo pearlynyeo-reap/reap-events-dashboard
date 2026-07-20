@@ -423,7 +423,7 @@
       </div>
       <div class="header-meta">
         <strong>Last Updated</strong>
-        Jul 13, 2026
+        Jul 20, 2026
         <div style="margin-top:4px;">Pipeline → Execution → Post-Mortem → HubSpot ROI → Budget Recon → Revenue Forecast</div>
       </div>
     </div>
@@ -454,13 +454,13 @@
     </div>
     <div class="kpi-card success">
       <div class="kpi-label">Completed Events</div>
-      <div class="kpi-value green">9</div>
+      <div class="kpi-value green">8</div>
       <div class="kpi-sub">H1 + Accra (Jul 9)</div>
     </div>
     <div class="kpi-card warning">
-      <div class="kpi-label">Budget Committed (9 events)</div>
-      <div class="kpi-value">~$205K</div>
-      <div class="kpi-sub">Incl. Accra ~$11K</div>
+      <div class="kpi-label" id="kpi-committed-label">Budget Committed (8 events)</div>
+      <div class="kpi-value" id="kpi-committed-val">~$205K</div>
+      <div class="kpi-sub">H1 actual spend</div>
     </div>
     <div class="kpi-card warning">
       <div class="kpi-label">HubSpot Sync Pending</div>
@@ -475,7 +475,7 @@
     <div class="kpi-card alert">
       <div class="kpi-label">Post-Event Actions Overdue</div>
       <div class="kpi-value red">1</div>
-      <div class="kpi-badge">🔴 Accra follow-ups due Jul 11</div>
+      <div class="kpi-badge">🔴 Accra lead follow-ups still open (mortem done Jul 20)</div>
     </div>
   </div>
 
@@ -530,7 +530,7 @@
       </div>
       <!-- Bar: Budget by region -->
       <div class="card">
-        <div class="card-title">H1 Budget Committed by Region <span class="badge">$193.9K</span></div>
+        <div class="card-title">H1 Budget Committed by Region <span class="badge" id="badge-region-committed">$193.9K</span></div>
         <div class="chart-container chart-md">
           <canvas id="chartBudgetRegion"></canvas>
         </div>
@@ -562,8 +562,8 @@
 
     <div class="filter-row" id="roster-filters">
       <button class="filter-btn active" onclick="filterRoster('all', this)">All (34)</button>
-      <button class="filter-btn" onclick="filterRoster('completed', this)">Completed (9)</button>
-      <button class="filter-btn" onclick="filterRoster('active', this)">Active / Upcoming (8)</button>
+      <button class="filter-btn" onclick="filterRoster('completed', this)">Completed (8)</button>
+      <button class="filter-btn" onclick="filterRoster('active', this)">Active / Upcoming (6)</button>
       <button class="filter-btn" onclick="filterRoster('LATAM', this)">LATAM (13)</button>
       <button class="filter-btn" onclick="filterRoster('APAC', this)">APAC (5)</button>
       <button class="filter-btn" onclick="filterRoster('Africa', this)">Africa (5)</button>
@@ -662,13 +662,13 @@
       <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:16px;">
         <div style="text-align:center; padding:16px; background:var(--indigo-50); border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Committed</div>
-          <div style="font-size:22px;font-weight:800;color:var(--indigo);">$193.9K</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">8 events</div>
+          <div style="font-size:22px;font-weight:800;color:var(--indigo);" id="stat-committed">$193.9K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="stat-committed-sub">8 events</div>
         </div>
         <div style="text-align:center; padding:16px; background:var(--green-bg); border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Reconciled</div>
-          <div style="font-size:22px;font-weight:800;color:var(--green);">$31.6K</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">MERGE SP only</div>
+          <div style="font-size:22px;font-weight:800;color:var(--green);" id="stat-reconciled">$31.6K</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="stat-reconciled-sub">MERGE SP only</div>
         </div>
         <div style="text-align:center; padding:16px; background:var(--yellow-bg); border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H2 Est. Budget</div>
@@ -694,8 +694,8 @@
     <div class="alert-banner">
       <div class="alert-icon">🚨</div>
       <div class="alert-text">
-        <div class="alert-title">Accra Stablecoin Conf — 48hr follow-ups overdue (due Jul 11)</div>
-        <div class="alert-sub">M2020 BKK mortem ✅ corrected — completed Apr 29–30 (was wrongly flagged overdue). Bitso mortem ✅ corrected — completed Jun 25 (was wrongly flagged overdue). Both still need HubSpot sync + budget recon. Accra event completed Jul 9 — follow-ups, lead sync, mortem all pending.</div>
+        <div class="alert-title">HubSpot sync + budget recon outstanding on all 4 signature H1 events</div>
+        <div class="alert-sub">Accra post-mortem ✅ DONE Jul 20 (hit 10-lead target, Cards-aligned; standout = Bank of Ghana + Ghana SEC regulatory equity) — but lead follow-ups, HubSpot/Blinq sync + budget recon (~$11K) still open. M2020 BKK (Apr 29–30) + Bitso (Jun 25) mortems done; both still need HubSpot sync + budget recon. MERGE + MXFTW mortems done, sync pending.</div>
       </div>
     </div>
 
@@ -733,7 +733,7 @@
 
     <div class="forecast-section">
       <div class="forecast-section-title">📐 ROI Framework</div>
-      <p style="font-size:13px;color:#3730a3;">Every $1 invested in events should generate <strong>$5 in pipeline</strong> (opportunities entered in HubSpot). For Signature events, the minimum absolute pipeline target is $200K. Actual pipeline is tracked post-event once HubSpot sync is complete. Current pipeline figures for completed events are pending sync — total potential H1 pipeline target is <strong>$969.5K</strong> from ~$193.9K committed spend.</p>
+      <p style="font-size:13px;color:#3730a3;">Every $1 invested in events should generate <strong>$5 in pipeline</strong> (opportunities entered in HubSpot). For Signature events, the minimum absolute pipeline target is $200K. Actual pipeline is tracked post-event once HubSpot sync is complete. Current pipeline figures for completed events are pending sync — total potential H1 pipeline target is <strong>$969.5K</strong> from ~$218.2K committed actual spend.</p>
     </div>
 
     <div class="grid-2">
@@ -777,7 +777,7 @@
       <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:16px;">
         <div style="text-align:center; padding:16px; background:var(--indigo-50); border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Cost Committed</div>
-          <div style="font-size:22px;font-weight:800;color:var(--indigo);">$193.9K</div>
+          <div style="font-size:22px;font-weight:800;color:var(--indigo);" id="fc-committed">$193.9K</div>
         </div>
         <div style="text-align:center; padding:16px; background:var(--indigo-50); border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">H1 Pipeline Target</div>
@@ -883,16 +883,16 @@
 
 const EVENTS = [
   // COMPLETED (H1 2026)
-  { name: "Fintech Mexico (MXFTW)", region: "LATAM", date: "Feb 2026", tier: "Signature", status: "completed", budget_proposed: 50000, budget_actual: 60000, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 300000, pipeline_actual: null, overdue_days: null, notes: "Moon sponsorship + booth + OOH + PR + travel. VIP Dinner 9-10/10, Padel 9-10/10. Stablecoin Mixer 4-5/10 (refund discussion needed). Key prospects: Capa, Payboom, Visa. Leads: high booth volume. Gaps: lead capture (WhatsApp unscalable), booth messaging vague, HK→MX merch shipping failed." },
-  { name: "MERGE Sao Paulo", region: "LATAM", date: "Mar 17–19, 2026", tier: "Growth", status: "completed", budget_proposed: 20000, budget_actual: 18570, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 92850, pipeline_actual: null, overdue_days: null, notes: "Mortem: Mar 31 (Pearlyn, Lucas, Arthur, Vitor). Highest-quality conference attended — fewer but more qualified leads. Strong enterprise prospects: Transfero, Mercado Bitcoin. Padel fast becoming Reap LatAm signature event (inbound FOMO). Side dinner 123 attendees (vs 80 planned). Key learnings: gate merch behind QR scans, explore WhatsApp QR lead scoring, seated format best during/post-conference." },
+  { name: "Fintech Mexico (MXFTW)", region: "LATAM", date: "Feb 2026", tier: "Signature", status: "completed", budget_proposed: 69000, budget_actual: 61342, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 300000, pipeline_actual: null, overdue_days: null, notes: "Moon sponsorship + booth + OOH + PR + travel. VIP Dinner 9-10/10, Padel 9-10/10. Stablecoin Mixer 4-5/10 (refund discussion needed). Key prospects: Capa, Payboom, Visa. Leads: high booth volume. Gaps: lead capture (WhatsApp unscalable), booth messaging vague, HK→MX merch shipping failed." },
+  { name: "MERGE Sao Paulo", region: "LATAM", date: "Mar 17–19, 2026", tier: "Growth", status: "completed", budget_proposed: 25000, budget_actual: 31323, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 92850, pipeline_actual: null, overdue_days: null, notes: "Mortem: Mar 31 (Pearlyn, Lucas, Arthur, Vitor). Highest-quality conference attended — fewer but more qualified leads. Strong enterprise prospects: Transfero, Mercado Bitcoin. Padel fast becoming Reap LatAm signature event (inbound FOMO). Side dinner 123 attendees (vs 80 planned). Key learnings: gate merch behind QR scans, explore WhatsApp QR lead scoring, seated format best during/post-conference." },
   { name: "M2020 BKK", region: "APAC", date: "Apr 21–23, 2026", tier: "Signature", status: "completed", budget_proposed: 55000, budget_actual: 48000, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: 100, leads_actual: null, opps_target: 20, opps_actual: null, pipeline_target: 240000, pipeline_actual: null, overdue_days: null, notes: "Mortem: Apr 29–30. MoneyPot sponsorship + 3x Elephants side events + Visa VIP Luncheon. Daren speaking. Key wins: partner proximity halo (Fireblocks HH), speaking coverage drove 'Reap everywhere' sentiment, Elephants BIN sponsorship signed. Gaps: Day 1-2 ROI front-loaded, booth clarity ('what do you do?'), lead capture inconsistent (Telegram+manual). Still pending: HubSpot sync + budget recon (~$48K)." },
   { name: "Consensus Miami", region: "North America", date: "May 5–7, 2026", tier: "Signature", status: "closed", budget_proposed: 0, budget_actual: 0, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🔴 CLOSED — Reap did not officially attend. No booth, no sponsorship, no activation. No post-event close-out required." },
-  { name: "Ledger Leaders Week", region: "LATAM", date: "May 18–22, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7500, budget_actual: 7500, mortem_status: "na", budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 37500, pipeline_actual: null, overdue_days: null, notes: "Gold tier ($3,500) + VIP dinner. Jan keynote. No post-event close-out required." },
+  { name: "Ledger Leaders Week", region: "LATAM", date: "May 18–22, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7500, budget_actual: 3500, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 37500, pipeline_actual: null, overdue_days: null, notes: "Gold tier ($3,500) + VIP dinner. Jan keynote. No post-event close-out required." },
   { name: "KBCC Nairobi", region: "Africa", date: "May 14–15, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 25000, pipeline_actual: null, overdue_days: null, notes: "Ian + Kelson. Landing page live. Leads collection + learnings pending from Ian/Kelson." },
-  { name: "Paytech Conf Colombia", region: "LATAM", date: "May 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Low-cost. Lucas." },
-  { name: "Stablecoin Conf by Bitso (CDMX)", region: "LATAM", date: "Jun 15–16, 2026", tier: "Signature", status: "completed", budget_proposed: 41900, budget_actual: 41900, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: 70, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 209500, pipeline_actual: null, overdue_days: null, notes: "Mortem: Jun 25. Jan, Lucas, Vitor, Alberto, Arthur, Daren. Key win: Reap x Visa rooftop (Somma) — Bitso called it 'best side event vibe', Visa leadership impressed. Gaps: Padel high registration but low attendance, misalignment on curated guest list criteria, not enough targeted 1:1 outreach. Still pending: HubSpot sync + budget recon (~$41,900)." },
+  { name: "Paytech Conf Colombia", region: "LATAM", date: "May 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 3000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Low-cost. Lucas." },
+  { name: "Stablecoin Conf by Bitso (CDMX)", region: "LATAM", date: "Jun 15–16, 2026", tier: "Signature", status: "completed", budget_proposed: 41900, budget_actual: 55012, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: 70, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 209500, pipeline_actual: null, overdue_days: null, notes: "Mortem: Jun 25. Jan, Lucas, Vitor, Alberto, Arthur, Daren. Key win: Reap x Visa rooftop (Somma) — Bitso called it 'best side event vibe', Visa leadership impressed. Gaps: Padel high registration but low attendance, misalignment on curated guest list criteria, not enough targeted 1:1 outreach. Budget reconciled at $55,012 (over the $41.9K proposed). Still pending: HubSpot sync." },
   // ACTIVE / IMMINENT
-  { name: "Accra Stablecoin Conf", region: "Africa", date: "Jul 9, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7600, budget_actual: 11000, mortem_status: "pending", budget_reconciled: false, hubspot_synced: false, leads_target: 40, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 38000, pipeline_actual: null, overdue_days: 4, notes: "EVENT COMPLETED Jul 9. Spoke + co-hosted side event + afterparty w/ Chasing Mavericks (Tunnel Lounge, Jul 9 evening). ⚠️ 48hr follow-ups DUE ~Jul 11 — OVERDUE. Blinq QR→HubSpot lead-capture sync pending verification. Budget reconciliation (~$11K) pending. Post-mortem to be scheduled. KPIs: 15 pre-booked meetings, 40 leads, 10 qualified opps, 1 partnership (Chasing Mavericks)." },
+  { name: "Accra Stablecoin Conf", region: "Africa", date: "Jul 9, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7600, budget_actual: 11000, mortem_status: "done", budget_reconciled: false, hubspot_synced: false, leads_target: 40, leads_actual: null, opps_target: 10, opps_actual: 10, pipeline_target: 38000, pipeline_actual: null, overdue_days: null, notes: "Post-mortem DONE Jul 20 (Kelson·Sales, Lorraine·RegCom, Naledi·RegCom). Diamond Sponsor (keynote + panel + side event) built strong brand credibility in a market Reap is still entering. Hit target — 10 qualified leads, mostly Cards-aligned (matches GP strategy). Standout: regulatory relationship equity with Bank of Ghana + Ghana SEC (direct value for licensing). Gaps: Reap brought into planning too late, unreliable attendance confirmations (Interswitch + Taptap Send no-shows), no standardized lead tracker (Blinq ad hoc), one-day single-market format below African commercial ambition. Next: involve Reap earlier, standardize target-account tracker, prioritize larger multi-country fintech (not crypto-only) events. Still pending: lead follow-ups (10 Cards leads), HubSpot/Blinq sync, budget recon (~$11K)." },
   // UPCOMING / PLANNED
   { name: "Blockchain Rio", region: "LATAM", date: "Aug 11–13, 2026", tier: "Signature", status: "confirmed", budget_proposed: 35000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: 100, leads_actual: null, opps_target: 12, opps_actual: null, pipeline_target: 175000, pipeline_actual: null, overdue_days: null, notes: "CONFIRMED Jul 6 — Platinum + Kraken Brazil co-sponsorship. VIK doc: Reap net ~$13K post co-sponsorship (tighten from ~half placeholder). Happy Hour ~100 pax co-hosted w/ Kraken Brazil. Venue scouting underway (rooftop, ≤15 min from ExpoRio). Fireside chat (Reap x Kraken) + 2 panels. LATAM ICP outreach starting. KPIs: 25+ pre-booked meetings, 80-120 leads, 10-15 qualified opps, 1 partnership announcement." },
   { name: "Korea Blockchain Week", region: "APAC", date: "Aug/Sep 2026 · Seoul", tier: "Non-Signature", status: "consideration", budget_proposed: 3000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "VIK doc: excluded (~$3K speaking slot only, below VIK threshold) — can proceed on cash if desired. Go/no-go + tier/budget scoping needed. Evaluate Payward co-activation. Major APAC event — scope before Aug." },
@@ -905,21 +905,21 @@ const EVENTS = [
   { name: "Money20/20 USA", region: "North America", date: "Oct 2026", tier: "Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Scope tier + budget. Payward co-activation." },
   { name: "ETH Brasil", region: "LATAM", date: "Oct 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Arthur, Vitor. Attend or skip?" },
   { name: "Tech Safari Ecosystem Mixer", region: "Africa", date: "Oct 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Side-event co-host decision." },
-  { name: "LABITCONF", region: "LATAM", date: "Oct 30–31, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 2 per H2 strategy." },
+  { name: "LABITCONF", region: "LATAM", date: "Oct 30–31, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 2 per H2 strategy." },
   { name: "Africa Stablecoin Summit", region: "Africa", date: "Nov 2026", tier: "Signature", status: "consideration", budget_proposed: 28000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Reap's signature Africa moment. Ian. VIK doc: ~$28K stage sponsorship (Tier 2) — flagged as judgment call on whether it goes in the room. Still needs go/no-go decision." },
   { name: "HK Fintech Week", region: "APAC", date: "Nov 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 25000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pearlyn, Sue Ann, Rachel. VIK ask ~$25K (sponsorship share + activation, Tier 2)." },
   { name: "SG Fintech Week", region: "APAC", date: "Nov 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 20000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pearlyn, Sue Ann, Rachel. VIK ask ~$20K (sponsorship share, Tier 2). Confirm = Singapore FinTech Festival." },
-  { name: "SALT London", region: "RoW", date: "Nov 3–4, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 1 per H2 strategy." },
+  { name: "SALT London", region: "RoW", date: "Nov 3–4, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 1 per H2 strategy." },
   { name: "BSL Colombia", region: "LATAM", date: "Nov 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Lucas. Go/no-go needed." },
-  { name: "Solana Breakpoint", region: "RoW", date: "Nov 2026", tier: "Non-Signature", status: "planning", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
-  { name: "Web Summit Lisbon", region: "RoW", date: "Nov 9–12, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 2 per H2 strategy." },
+  { name: "Solana Breakpoint", region: "RoW", date: "Nov 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
+  { name: "Web Summit Lisbon", region: "RoW", date: "Nov 9–12, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Tier 2 per H2 strategy." },
   { name: "Blockchain Life Dubai", region: "RoW", date: "Dec 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
   { name: "Affiliate World Forum (BKK)", region: "RoW", date: "Dec 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ Cancún, total ~$32.4K. Dec 2026." },
   { name: "Affiliate World Forum (Cancun)", region: "LATAM", date: "Sep 7–8, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ BKK, total ~$32.4K. ⚠️ VIK discrepancy: VIK doc asks $50K (booth ~$27K + side event + activation, Tier 1) — larger scope. Confirm whether Visa funding replaces or upgrades before Visa conversation. SOW pending sign-off w/ Visa. Owners: Pearlyn, Mindaugas, Anushka." },
   // NEW EVENTS (added Jul 13)
   { name: "Labit Conf CDMX", region: "LATAM", date: "Aug 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Go/no-go + format decision needed (walk floor / meetings / side event). Owners: Sales (Lucas, Jan), Marketing (Pearlyn)." },
   { name: "Token Americas MX", region: "LATAM", date: "Aug 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Attend or skip? Decide format + owner. Sales (Jan, Lucas), Marketing (Pearlyn)." },
-  { name: "Argentina LATAM Digital Assets Conf", region: "LATAM", date: "Jul 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 5000, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Under consideration. Sales (Lucas, Jan)." },
+  { name: "Argentina LATAM Digital Assets Conf", region: "LATAM", date: "Jul 2026", tier: "Non-Signature", status: "consideration", budget_proposed: 5000, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Under consideration. Sales (Lucas, Jan)." },
 ];
 
 const HUBSPOT_DEALS = [
@@ -1077,6 +1077,20 @@ function buildBudgetTables() {
     <td>—</td>
   </tr>`;
 
+  // Budget aggregates — computed from EVENTS so they never drift out of sync
+  const K = v => '$' + (v / 1000).toFixed(1) + 'K';
+  const reconciledEvents = h1Events.filter(e => e.budget_reconciled === true);
+  const reconciledTotal = reconciledEvents.reduce((s, e) => s + (e.budget_actual || 0), 0);
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('kpi-committed-label', `Budget Committed (${h1Events.length} events)`);
+  setText('kpi-committed-val', '~' + K(totalActual));
+  setText('badge-region-committed', K(totalActual));
+  setText('stat-committed', K(totalActual));
+  setText('stat-committed-sub', `${h1Events.length} events`);
+  setText('fc-committed', K(totalActual));
+  setText('stat-reconciled', K(reconciledTotal));
+  setText('stat-reconciled-sub', `${reconciledEvents.length} of ${h1Events.length} events reconciled`);
+
   // H2 table
   const h2Events = EVENTS.filter(e => !['completed'].includes(e.status));
   const h2body = document.getElementById('budget-h2-body');
@@ -1102,16 +1116,16 @@ function buildBudgetTables() {
 
 const OVERDUE_EVENTS = [
   {
-    name: 'Accra Stablecoin Conf',
+    name: 'Accra Stablecoin Conf — Pending Verification',
     region: 'Africa — Jul 9, 2026',
-    days: 4,
+    days: null,
     budget: '~$11K',
     checks: [
-      { label: '① 48hr Follow-ups sent (DUE Jul 11 — OVERDUE)', done: false },
-      { label: '② Blinq QR → HubSpot lead-capture sync verified', done: false },
-      { label: '③ Leads entered in tracking sheet (target: 40)', done: false },
-      { label: '④ Budget reconciled (~$11K)', done: false },
-      { label: '⑤ Post-mortem scheduled', done: false },
+      { label: '① Post-mortem completed ✅ (Jul 20)', done: true },
+      { label: '② 10 qualified leads captured ✅ — hit target (Cards-aligned)', done: true },
+      { label: '③ Follow up with 10 Cards leads + log conversions', done: false },
+      { label: '④ Blinq QR → HubSpot lead-capture sync verified', done: false },
+      { label: '⑤ Budget reconciled (~$11K)', done: false },
     ]
   },
   {
@@ -1174,6 +1188,47 @@ function buildMortemCards() {
   completedSection.innerHTML = `
     <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
       <span>✅ Completed Post-Mortems</span>
+    </div>
+    <div style="background:var(--white);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--green);margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Accra Stablecoin Conf <span style="background:#fef9c3;color:#92400e;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;margin-left:4px;">NEW</span></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Jul 9, 2026 &nbsp;·&nbsp; Africa &nbsp;·&nbsp; <span style="background:#f1f5f9;color:#475569;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;">Non-Signature</span> &nbsp;·&nbsp; Debrief Jul 20 (Kelson, Lorraine, Naledi)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="badge-status badge-completed">✓ Completed</span>
+          <a href="https://www.notion.so/reap/Accra-Stablecoin-Conference-Post-Mortem-3a37e193475081539d04cc805d12376c" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;border:1px solid var(--indigo-200);padding:4px 10px;border-radius:6px;">📄 View Retro →</a>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:16px 18px;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Key Wins</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#166534;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Regulatory relationship equity was the standout — direct engagement with Bank of Ghana + Ghana SEC, high value for future licensing conversations</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Hit the lead target — 10 qualified leads, mostly Cards-aligned, matching current GP strategy</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Diamond Sponsor visibility (keynote + panel + side event) built multi-touchpoint credibility in a market Reap is still entering</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✓</span><span>Intimate, closed-door format gave direct access to decision-makers + larger logos across regulators, banks, fintechs, infra providers</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Gaps</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#92400e;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Reap brought into planning too late (panel questions arrived late) — limited objective alignment + pre-scheduled meetings</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>Attendance confirmations unreliable — target accounts (Interswitch, Taptap Send) + confirmed side-event guests didn't show</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>No standardized system for tracking target orgs/leads pre/during/post-event (Blinq helped but was ad hoc)</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>✗</span><span>One-day, single-market, closed-door format didn't match the ambition needed for broader African commercial reach</span></li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--indigo-dark);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Strategic Actions</div>
+          <ul style="list-style:none;padding:0;margin:0;font-size:12.5px;color:#3730a3;">
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Shift Africa strategy toward larger, multi-country fintech conferences over single-market or crypto-only gatherings</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Get Reap involved earlier in event planning to shape agenda + pre-align stakeholder meetings</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Build a standard structured tracker for target accounts + leads, used consistently pre/during/post-event (Blinq as default)</span></li>
+            <li style="padding:3px 0;display:flex;gap:8px;"><span>→</span><span>Follow up with all 10 Cards leads + log conversions; schedule follow-up touchpoint with Bank of Ghana + Ghana SEC</span></li>
+          </ul>
+        </div>
+      </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--green);margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
@@ -1362,6 +1417,7 @@ function buildMortemCards() {
       'MERGE Sao Paulo': 'https://www.notion.so/reap/Merge-Post-Mortem-3347e193475080599683c0311ea7f080',
       'M2020 BKK': 'https://www.notion.so/reap/M2020-BKK-Event-Post-mortem-3517e1934750808c9441eaa63e444442',
       'Stablecoin Conf by Bitso (CDMX)': 'https://www.notion.so/reap/Stablecoin-Conference-by-Bitso-Post-Mortem-39c7e1934750805b83b4ed3ce2140ef6',
+      'Accra Stablecoin Conf': 'https://www.notion.so/reap/Accra-Stablecoin-Conference-Post-Mortem-3a37e193475081539d04cc805d12376c',
     };
     const retroUrl = retroLinks[e.name];
     const nameCell = retroUrl
@@ -1509,7 +1565,7 @@ function buildChartStatus() {
   new Chart(document.getElementById('chartStatus'), {
     type: 'doughnut',
     data: {
-      labels: ['Completed (8)', 'Confirmed (6)', 'Planning (1)', 'Consideration (8)', 'TBC (6)'],
+      labels: [`Completed (${counts.completed})`, `Confirmed (${counts.confirmed})`, `Planning (${counts.planning})`, `Consideration (${counts.consideration})`, `TBC (${counts.tbc})`],
       datasets: [{
         data: [counts.completed, counts.confirmed, counts.planning, counts.consideration, counts.tbc],
         backgroundColor: ['#16a34a', '#2563eb', '#ca8a04', '#ea580c', '#9ca3af'],
@@ -1528,13 +1584,18 @@ function buildChartStatus() {
 }
 
 function buildChartBudgetRegion() {
+  const regions = ['LATAM', 'APAC', 'North America', 'Africa', 'RoW'];
+  const completed = EVENTS.filter(e => e.status === 'completed');
+  const regionData = regions.map(r => Math.round(
+    completed.filter(e => e.region === r).reduce((s, e) => s + (e.budget_actual || e.budget_proposed || 0), 0) / 100
+  ) / 10);
   new Chart(document.getElementById('chartBudgetRegion'), {
     type: 'bar',
     data: {
-      labels: ['LATAM', 'APAC', 'North America', 'Africa', 'RoW'],
+      labels: regions,
       datasets: [{
         label: 'H1 Budget Committed ($K)',
-        data: [115, 48, 23, 13, 0],
+        data: regionData,
         backgroundColor: ['#4f46e5','#6366f1','#818cf8','#a5b4fc','#c7d2fe'],
         borderRadius: 6, borderSkipped: false,
       }]
