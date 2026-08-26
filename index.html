@@ -714,6 +714,7 @@
               <th>48hr Follow-ups</th>
               <th>Leads in Sheet</th>
               <th>HubSpot Synced</th>
+              <th>Budget Reconciled</th>
               <th>Mortem Done</th>
               <th>Overall</th>
             </tr>
@@ -1150,7 +1151,7 @@ const OVERDUE_EVENTS = [
       { label: '① Post-mortem completed ✅ (Jun 25)', done: true },
       { label: '② Event wrap recap in progress ✅ (Jun 29)', done: true },
       { label: '③ HubSpot synced (70 leads, 10 opps target)', done: false },
-      { label: '④ Budget reconciled ($41.9K)', done: false },
+      { label: '④ Budget reconciled ✅ ($55,012)', done: true },
       { label: '⑤ Stable World Cup CDMX outcome confirmed', done: false },
     ]
   }
@@ -1435,6 +1436,7 @@ function buildMortemCards() {
       <td style="text-align:center;">${checkIcon(followUp)}</td>
       <td style="text-align:center;">${checkIcon(leadsSheet)}</td>
       <td style="text-align:center;">${checkIcon(hsSync)}</td>
+      <td style="text-align:center;">${checkIcon(budgetRec)}</td>
       <td style="text-align:center;">${mortemCell}</td>
       <td>${overallBadge}</td>
     </tr>`;
