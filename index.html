@@ -1119,12 +1119,25 @@ function eventUniverse() {
   return committed.concat(LATAM_CALENDAR.map(m => ({ ...m, committed: false })));
 }
 
+// Chronological sort key from a date string ("Aug 11–13, 2026", "Nov 2026", "2026 (TBC)", ...)
+const MONTHS_SEQ = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function eventSortKey(e) {
+  const d = e.date || '';
+  const year = (d.match(/(20\d{2})/) || [])[1] ? parseInt((d.match(/(20\d{2})/))[1], 10) : 2026;
+  let month = 99;
+  for (let i = 0; i < 12; i++) { if (d.includes(MONTHS_SEQ[i])) { month = i + 1; break; } }
+  const dm = d.match(new RegExp('(' + MONTHS_SEQ.join('|') + ')\\s+(\\d{1,2})(?!\\d)'));  // (?!\d) so a 4-digit year isn't read as a day
+  const day = dm ? parseInt(dm[2], 10) : 0;
+  return year * 10000 + month * 100 + day;   // undated (month 99) sort to the end within their year
+}
+
 function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
   let rows = eventUniverse();
   if (filter === 'completed') rows = rows.filter(e => e.status === 'completed');
   else if (filter === 'active') rows = rows.filter(e => ['confirmed', 'planning'].includes(e.status));
   else if (['LATAM','APAC','Africa','North America','RoW'].includes(filter)) rows = rows.filter(e => e.region === filter);
+  rows = rows.slice().sort((a, b) => eventSortKey(a) - eventSortKey(b) || a.name.localeCompare(b.name));
 
   document.getElementById('roster-body').innerHTML = rows.map(e => {
     const isCommitted = e.committed && ['confirmed', 'completed'].includes(e.status);
