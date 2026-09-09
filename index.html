@@ -1148,12 +1148,13 @@ function dateSortKey(d) {
   return year * 10000 + month * 100 + day;
 }
 
-// Derive a 2027 status from the date2027 string (we don't track a separate 2027 status field yet)
+// Derive a 2027 status from the date2027 string. Note: a "confirmed" date is the EVENT's date
+// being set by the organiser — NOT Reap committing. Reap has no confirmed 2027 participation yet,
+// so this never returns 'confirmed': a known date → consideration, TBA → tbc.
 function status2027Of(d) {
   d = (d || '').trim();
   if (!d || d === '—' || /^TBA$/i.test(d) || /none announced/i.test(d) || /Merge Buenos Aires/i.test(d)) return 'tbc';
-  if (/confirmed/i.test(d) || /\d{1,2}\s*[–-]\s*\d{1,2}/.test(d)) return 'confirmed';
-  return 'consideration';   // month-level placeholder ("Feb 2027", "Mar 2027")
+  return 'consideration';
 }
 
 function buildRosterTable(filter = rosterFilter) {
