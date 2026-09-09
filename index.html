@@ -740,8 +740,16 @@
        TAB: REVENUE FORECAST
   ══════════════════════════════════════════════════════════════════ -->
   <div id="tab-forecast" class="section">
-    <div class="section-title">Revenue Forecast — 5× Pipeline ROI Model</div>
+    <div class="section-title">Revenue Forecast — 5× Pipeline ROI Model <span style="font-size:11px;font-weight:700;background:#fef9c3;color:#92400e;padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:middle;">⚠️ WIP — DRAFT ONLY, NOT REAL NUMBERS</span></div>
     <div class="section-sub">Event cost → pipeline target → estimated pipeline generated, with ROI tracking per event.</div>
+
+    <div class="alert-banner" style="border-left-color:#f59e0b;background:#fffbeb;">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text">
+        <div class="alert-title" style="color:#92400e;">Draft / illustrative only — do not cite these figures</div>
+        <div class="alert-sub">Pipeline targets, estimated pipeline generated, and ROI here are placeholder modelling (5× committed spend), not actual HubSpot pipeline or closed revenue. Work in progress — real numbers pending HubSpot/finance reconciliation.</div>
+      </div>
+    </div>
 
     <div class="forecast-section">
       <div class="forecast-section-title">📐 ROI Framework</div>
@@ -900,7 +908,7 @@ const EVENTS = [
   { name: "M2020 BKK", region: "APAC", date: "Apr 21–23, 2026", tier: "Signature", status: "completed", budget_proposed: 55000, budget_actual: 48000, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: 100, leads_actual: 693, opps_target: 20, opps_actual: 179, pipeline_target: 240000, pipeline_actual: null, overdue_days: null, notes: "Mortem: Apr 29–30. MoneyPot sponsorship + 3x Elephants side events + Visa VIP Luncheon. Daren speaking. Key wins: partner proximity halo (Fireblocks HH), speaking coverage drove 'Reap everywhere' sentiment, Elephants BIN sponsorship signed. Gaps: Day 1-2 ROI front-loaded, booth clarity ('what do you do?'), lead capture inconsistent (Telegram+manual). Still pending: HubSpot sync + budget recon (~$48K)." },
   { name: "Consensus Miami", region: "North America", date: "May 5–7, 2026", tier: "Signature", status: "closed", budget_proposed: 0, budget_actual: 0, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🔴 CLOSED — Reap did not officially attend. No booth, no sponsorship, no activation. No post-event close-out required." },
   { name: "Ledger Leaders Week", region: "LATAM", date: "May 18–22, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7500, budget_actual: 3500, mortem_status: "na", budget_reconciled: true, hubspot_synced: true, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 37500, pipeline_actual: null, overdue_days: null, notes: "Gold tier ($3,500) + VIP dinner. Jan keynote. No post-event close-out required." },
-  { name: "KBCC Nairobi", region: "Africa", date: "May 14–15, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 25000, pipeline_actual: null, overdue_days: null, notes: "Ian + Kelson. Landing page live. Leads collection + learnings pending from Ian/Kelson." },
+  { name: "KBCC Nairobi", region: "Africa", date: "May 14–15, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: 12, pipeline_target: 25000, pipeline_actual: null, overdue_days: null, notes: "Ian + Kelson. Landing page live. Leads collection + learnings pending from Ian/Kelson." },
   { name: "Paytech Conf Colombia", region: "LATAM", date: "May 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 3000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Low-cost. Lucas." },
   { name: "Stablecoin Conf by Bitso (CDMX)", region: "LATAM", date: "Jun 15–16, 2026", tier: "Signature", status: "completed", budget_proposed: 41900, budget_actual: 55012, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: 70, leads_actual: 373, opps_target: 10, opps_actual: 27, pipeline_target: 209500, pipeline_actual: null, overdue_days: null, notes: "Mortem: Jun 25. Jan, Lucas, Vitor, Alberto, Arthur, Daren. Key win: Reap x Visa rooftop (Somma) — Bitso called it 'best side event vibe', Visa leadership impressed. Gaps: Padel high registration but low attendance, misalignment on curated guest list criteria, not enough targeted 1:1 outreach. Budget reconciled at $55,012 (over the $41.9K proposed). Still pending: HubSpot sync." },
   // ACTIVE / IMMINENT
