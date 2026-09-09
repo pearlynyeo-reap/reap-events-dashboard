@@ -1157,12 +1157,19 @@ function status2027Of(d) {
   return 'consideration';
 }
 
+// Effective status for the active year — so status filters/counts reflect 2027 (nothing completed/active yet)
+function statusForYear(e) {
+  if (rosterYear !== '2027') return e.status;
+  const native = !e.date || e.date === '—';
+  return (native && e.status) ? e.status : status2027Of(e.date2027);
+}
+
 function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
   const yr = rosterYear;
   let rows = eventUniverse();
-  if (filter === 'completed') rows = rows.filter(e => e.status === 'completed');
-  else if (filter === 'active') rows = rows.filter(e => ['confirmed', 'planning'].includes(e.status));
+  if (filter === 'completed') rows = rows.filter(e => statusForYear(e) === 'completed');
+  else if (filter === 'active') rows = rows.filter(e => ['confirmed', 'planning'].includes(statusForYear(e)));
   else if (['LATAM','APAC','Africa','North America','RoW'].includes(filter)) rows = rows.filter(e => e.region === filter);
   // 2026 view hides pure-2027 events (no 2026 date); 2027 view shows the full recurring roster
   if (yr === '2026') rows = rows.filter(e => e.date && e.date !== '—');
@@ -1245,8 +1252,8 @@ function buildRosterFilterCounts() {
   let u = eventUniverse();
   if (rosterYear === '2026') u = u.filter(e => e.date && e.date !== '—');   // match the year-filtered table
   const countFor = f => f === 'all' ? u.length
-    : f === 'completed' ? u.filter(e => e.status === 'completed').length
-    : f === 'active' ? u.filter(e => ['confirmed', 'planning'].includes(e.status)).length
+    : f === 'completed' ? u.filter(e => statusForYear(e) === 'completed').length
+    : f === 'active' ? u.filter(e => ['confirmed', 'planning'].includes(statusForYear(e))).length
     : u.filter(e => e.region === f).length;
   document.querySelectorAll('#roster-filters .filter-btn').forEach(b => {
     const m = (b.getAttribute('onclick') || '').match(/filterRoster\('([^']+)'/);
