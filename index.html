@@ -612,7 +612,7 @@
       <div class="alert-icon">💸</div>
       <div class="alert-text">
         <div class="alert-title">All completed-event budgets reconciled — HubSpot sync is the remaining open item</div>
-        <div class="alert-sub">All 12 completed events reconciled: ~$260.0K total actual spend. Note: M2020 BKK ($48K), Accra ($11K) and KBCC ($5K) are round figures — replace with exact spend if finance has final numbers. HubSpot sync still open across completed events (incl. Blockchain Rio's 250-lead nurture).</div>
+        <div class="alert-sub">All 12 completed events reconciled: ~$260.0K total actual spend. Note: M2020 BKK ($48K), Accra ($11K) and KBCC ($5K) are round figures — replace with exact spend if finance has final numbers. HubSpot sync now done for all signature/close-out events (MXFTW, Merge, M2020, Bitso, Accra, Blockchain Rio + Ledger).</div>
       </div>
     </div>
 
@@ -701,14 +701,12 @@
     <div class="alert-banner">
       <div class="alert-icon">🚨</div>
       <div class="alert-text">
-        <div class="alert-title">Post-mortems done + budgets reconciled — HubSpot lead sync is the remaining close-out step</div>
-        <div class="alert-sub">All completed-event post-mortems are done and budgets reconciled (~$260.0K). Remaining open item is HubSpot / Blinq lead sync + follow-up nurture across completed events — most notably Blockchain Rio's 250 booth leads and Accra's Cards-aligned leads.</div>
+        <div class="alert-title">Close-out complete — post-mortems done, budgets reconciled, HubSpot synced</div>
+        <div class="alert-sub">All key completed events are fully closed out: post-mortems done, budgets reconciled (~$260.0K), and HubSpot / Blinq lead sync now done (MXFTW, Merge, M2020, Bitso, Accra, Blockchain Rio + Ledger). Remaining: follow-up nurture / conversion tracking on synced leads (e.g. Blockchain Rio's 250 booth leads, Accra's Cards-aligned leads).</div>
       </div>
     </div>
 
-    <div id="mortem-cards"></div>
-
-    <!-- Completed / in-progress events -->
+    <!-- Completed events close-out (above the post-mortems) -->
     <div class="card">
       <div class="card-title">All Completed Events — Close-Out Status</div>
       <div class="table-wrap">
@@ -718,6 +716,8 @@
               <th>Event</th>
               <th>Date</th>
               <th>Region</th>
+              <th>Contacts</th>
+              <th>Qual. Leads</th>
               <th>48hr Follow-ups</th>
               <th>Leads in Sheet</th>
               <th>HubSpot Synced</th>
@@ -729,7 +729,10 @@
           <tbody id="mortem-table-body"></tbody>
         </table>
       </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Contacts = total marketing contacts captured · Qual. Leads = qualified leads/opps · “tgt” = target (actual not yet in).</div>
     </div>
+
+    <div id="mortem-cards"></div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════
@@ -891,18 +894,18 @@
 
 const EVENTS = [
   // COMPLETED (H1 2026)
-  { name: "Fintech Mexico (MXFTW)", region: "LATAM", date: "Feb 2026", tier: "Signature", status: "completed", budget_proposed: 69000, budget_actual: 61342, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 300000, pipeline_actual: null, overdue_days: null, notes: "Moon sponsorship + booth + OOH + PR + travel. VIP Dinner 9-10/10, Padel 9-10/10. Stablecoin Mixer 4-5/10 (refund discussion needed). Key prospects: Capa, Payboom, Visa. Leads: high booth volume. Gaps: lead capture (WhatsApp unscalable), booth messaging vague, HK→MX merch shipping failed." },
-  { name: "MERGE Sao Paulo", region: "LATAM", date: "Mar 17–19, 2026", tier: "Growth", status: "completed", budget_proposed: 25000, budget_actual: 31323, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 92850, pipeline_actual: null, overdue_days: null, notes: "Mortem: Mar 31 (Pearlyn, Lucas, Arthur, Vitor). Highest-quality conference attended — fewer but more qualified leads. Strong enterprise prospects: Transfero, Mercado Bitcoin. Padel fast becoming Reap LatAm signature event (inbound FOMO). Side dinner 123 attendees (vs 80 planned). Key learnings: gate merch behind QR scans, explore WhatsApp QR lead scoring, seated format best during/post-conference." },
-  { name: "M2020 BKK", region: "APAC", date: "Apr 21–23, 2026", tier: "Signature", status: "completed", budget_proposed: 55000, budget_actual: 48000, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: 100, leads_actual: null, opps_target: 20, opps_actual: null, pipeline_target: 240000, pipeline_actual: null, overdue_days: null, notes: "Mortem: Apr 29–30. MoneyPot sponsorship + 3x Elephants side events + Visa VIP Luncheon. Daren speaking. Key wins: partner proximity halo (Fireblocks HH), speaking coverage drove 'Reap everywhere' sentiment, Elephants BIN sponsorship signed. Gaps: Day 1-2 ROI front-loaded, booth clarity ('what do you do?'), lead capture inconsistent (Telegram+manual). Still pending: HubSpot sync + budget recon (~$48K)." },
+  { name: "Fintech Mexico (MXFTW)", region: "LATAM", date: "Feb 2026", tier: "Signature", status: "completed", budget_proposed: 69000, budget_actual: 61342, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 300000, pipeline_actual: null, overdue_days: null, notes: "Moon sponsorship + booth + OOH + PR + travel. VIP Dinner 9-10/10, Padel 9-10/10. Stablecoin Mixer 4-5/10 (refund discussion needed). Key prospects: Capa, Payboom, Visa. Leads: high booth volume. Gaps: lead capture (WhatsApp unscalable), booth messaging vague, HK→MX merch shipping failed." },
+  { name: "MERGE Sao Paulo", region: "LATAM", date: "Mar 17–19, 2026", tier: "Growth", status: "completed", budget_proposed: 25000, budget_actual: 31323, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 92850, pipeline_actual: null, overdue_days: null, notes: "Mortem: Mar 31 (Pearlyn, Lucas, Arthur, Vitor). Highest-quality conference attended — fewer but more qualified leads. Strong enterprise prospects: Transfero, Mercado Bitcoin. Padel fast becoming Reap LatAm signature event (inbound FOMO). Side dinner 123 attendees (vs 80 planned). Key learnings: gate merch behind QR scans, explore WhatsApp QR lead scoring, seated format best during/post-conference." },
+  { name: "M2020 BKK", region: "APAC", date: "Apr 21–23, 2026", tier: "Signature", status: "completed", budget_proposed: 55000, budget_actual: 48000, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: 100, leads_actual: null, opps_target: 20, opps_actual: null, pipeline_target: 240000, pipeline_actual: null, overdue_days: null, notes: "Mortem: Apr 29–30. MoneyPot sponsorship + 3x Elephants side events + Visa VIP Luncheon. Daren speaking. Key wins: partner proximity halo (Fireblocks HH), speaking coverage drove 'Reap everywhere' sentiment, Elephants BIN sponsorship signed. Gaps: Day 1-2 ROI front-loaded, booth clarity ('what do you do?'), lead capture inconsistent (Telegram+manual). Still pending: HubSpot sync + budget recon (~$48K)." },
   { name: "Consensus Miami", region: "North America", date: "May 5–7, 2026", tier: "Signature", status: "closed", budget_proposed: 0, budget_actual: 0, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🔴 CLOSED — Reap did not officially attend. No booth, no sponsorship, no activation. No post-event close-out required." },
-  { name: "Ledger Leaders Week", region: "LATAM", date: "May 18–22, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7500, budget_actual: 3500, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 37500, pipeline_actual: null, overdue_days: null, notes: "Gold tier ($3,500) + VIP dinner. Jan keynote. No post-event close-out required." },
+  { name: "Ledger Leaders Week", region: "LATAM", date: "May 18–22, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7500, budget_actual: 3500, mortem_status: "na", budget_reconciled: true, hubspot_synced: true, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 37500, pipeline_actual: null, overdue_days: null, notes: "Gold tier ($3,500) + VIP dinner. Jan keynote. No post-event close-out required." },
   { name: "KBCC Nairobi", region: "Africa", date: "May 14–15, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: 25000, pipeline_actual: null, overdue_days: null, notes: "Ian + Kelson. Landing page live. Leads collection + learnings pending from Ian/Kelson." },
   { name: "Paytech Conf Colombia", region: "LATAM", date: "May 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 3000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Low-cost. Lucas." },
-  { name: "Stablecoin Conf by Bitso (CDMX)", region: "LATAM", date: "Jun 15–16, 2026", tier: "Signature", status: "completed", budget_proposed: 41900, budget_actual: 55012, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: 70, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 209500, pipeline_actual: null, overdue_days: null, notes: "Mortem: Jun 25. Jan, Lucas, Vitor, Alberto, Arthur, Daren. Key win: Reap x Visa rooftop (Somma) — Bitso called it 'best side event vibe', Visa leadership impressed. Gaps: Padel high registration but low attendance, misalignment on curated guest list criteria, not enough targeted 1:1 outreach. Budget reconciled at $55,012 (over the $41.9K proposed). Still pending: HubSpot sync." },
+  { name: "Stablecoin Conf by Bitso (CDMX)", region: "LATAM", date: "Jun 15–16, 2026", tier: "Signature", status: "completed", budget_proposed: 41900, budget_actual: 55012, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: 70, leads_actual: null, opps_target: 10, opps_actual: null, pipeline_target: 209500, pipeline_actual: null, overdue_days: null, notes: "Mortem: Jun 25. Jan, Lucas, Vitor, Alberto, Arthur, Daren. Key win: Reap x Visa rooftop (Somma) — Bitso called it 'best side event vibe', Visa leadership impressed. Gaps: Padel high registration but low attendance, misalignment on curated guest list criteria, not enough targeted 1:1 outreach. Budget reconciled at $55,012 (over the $41.9K proposed). Still pending: HubSpot sync." },
   // ACTIVE / IMMINENT
-  { name: "Accra Stablecoin Conf", region: "Africa", date: "Jul 9, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7600, budget_actual: 11000, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: 40, leads_actual: null, opps_target: 10, opps_actual: 10, pipeline_target: 38000, pipeline_actual: null, overdue_days: null, notes: "Post-mortem DONE Jul 20 (Kelson·Sales, Lorraine·RegCom, Naledi·RegCom). Diamond Sponsor (keynote + panel + side event) built strong brand credibility in a market Reap is still entering. Hit target — 10 qualified leads, mostly Cards-aligned (matches GP strategy). Standout: regulatory relationship equity with Bank of Ghana + Ghana SEC (direct value for licensing). Gaps: Reap brought into planning too late, unreliable attendance confirmations (Interswitch + Taptap Send no-shows), no standardized lead tracker (Blinq ad hoc), one-day single-market format below African commercial ambition. Next: involve Reap earlier, standardize target-account tracker, prioritize larger multi-country fintech (not crypto-only) events. Still pending: lead follow-ups (10 Cards leads), HubSpot/Blinq sync, budget recon (~$11K)." },
+  { name: "Accra Stablecoin Conf", region: "Africa", date: "Jul 9, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 7600, budget_actual: 11000, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: 40, leads_actual: null, opps_target: 10, opps_actual: 10, pipeline_target: 38000, pipeline_actual: null, overdue_days: null, notes: "Post-mortem DONE Jul 20 (Kelson·Sales, Lorraine·RegCom, Naledi·RegCom). Diamond Sponsor (keynote + panel + side event) built strong brand credibility in a market Reap is still entering. Hit target — 10 qualified leads, mostly Cards-aligned (matches GP strategy). Standout: regulatory relationship equity with Bank of Ghana + Ghana SEC (direct value for licensing). Gaps: Reap brought into planning too late, unreliable attendance confirmations (Interswitch + Taptap Send no-shows), no standardized lead tracker (Blinq ad hoc), one-day single-market format below African commercial ambition. Next: involve Reap earlier, standardize target-account tracker, prioritize larger multi-country fintech (not crypto-only) events. Still pending: lead follow-ups (10 Cards leads), HubSpot/Blinq sync, budget recon (~$11K)." },
   // UPCOMING / PLANNED
-  { name: "Blockchain Rio", region: "LATAM", date: "Aug 11–13, 2026", tier: "Signature", status: "completed", budget_proposed: 35000, budget_actual: 29600, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: 100, leads_actual: 1279, opps_target: 12, opps_actual: 40, pipeline_target: 175000, pipeline_actual: null, overdue_days: null, notes: "✅ COMPLETED + post-mortem done (Aug 17). Budget reconciled at $29,600 (Platinum + Kraken Brazil co-sponsorship). 1,279 marketing contacts (250 booth + 1,029 side event), 40 qualified leads (Blinq), CPL $740. 1 closed-won: Avenia (Cards API, now full-stack). Cards API = clear LATAM wedge (Mercado Bitcoin, Liberpay, Meru·CO, Belo·AR). Gaps: organizer reliability poor, Bridge side-party underdelivered, need booth demos (iPhones/TV) + live content layer. Pending: HubSpot drip sync for 250 leads." },
+  { name: "Blockchain Rio", region: "LATAM", date: "Aug 11–13, 2026", tier: "Signature", status: "completed", budget_proposed: 35000, budget_actual: 29600, mortem_status: "done", budget_reconciled: true, hubspot_synced: true, leads_target: 100, leads_actual: 1279, opps_target: 12, opps_actual: 40, pipeline_target: 175000, pipeline_actual: null, overdue_days: null, notes: "✅ COMPLETED + post-mortem done (Aug 17). Budget reconciled at $29,600 (Platinum + Kraken Brazil co-sponsorship). 1,279 marketing contacts (250 booth + 1,029 side event), 40 qualified leads (Blinq), CPL $740. 1 closed-won: Avenia (Cards API, now full-stack). Cards API = clear LATAM wedge (Mercado Bitcoin, Liberpay, Meru·CO, Belo·AR). Gaps: organizer reliability poor, Bridge side-party underdelivered, need booth demos (iPhones/TV) + live content layer. Pending: HubSpot drip sync for 250 leads." },
   { name: "Korea Blockchain Week", region: "APAC", date: "Aug/Sep 2026 · Seoul", tier: "Non-Signature", status: "confirmed", budget_proposed: 3000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🟢 CONFIRMED — going, PR-led (no booth/sponsorship): Arjun speaking, Daren pitched for 3 slots, Payward/Kraken co-activation. ~$3K speaking-only. Owners: Pearlyn, Sue Ann, Sales." },
   { name: "Tech Safari Summit", region: "Africa", date: "Sep 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Coordinate with Accra learnings." },
   { name: "Seamless Africa", region: "Africa", date: "Sep 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Evaluate ICP density." },
@@ -1778,6 +1781,10 @@ function buildMortemCards() {
     const hsSync = e.hubspot_synced;
     const budgetRec = e.budget_reconciled === true;
     const mortemDone = done;
+    const contacts = e.leads_actual != null ? e.leads_actual.toLocaleString()
+      : (e.leads_target != null ? `<span style="color:var(--text-muted);">${e.leads_target}<span style="font-size:9px;"> tgt</span></span>` : '—');
+    const qualLeads = e.opps_actual != null ? e.opps_actual.toLocaleString()
+      : (e.opps_target != null ? `<span style="color:var(--text-muted);">${e.opps_target}<span style="font-size:9px;"> tgt</span></span>` : '—');
     const overallBadge = na
       ? '<span class="badge-status badge-completed">✓ Closed</span>'
       : done
@@ -1807,6 +1814,8 @@ function buildMortemCards() {
       <td>${nameCell}</td>
       <td style="font-size:12px;">${e.date}</td>
       <td>${e.region}</td>
+      <td style="text-align:center;font-size:12px;font-weight:600;">${contacts}</td>
+      <td style="text-align:center;font-size:12px;font-weight:600;">${qualLeads}</td>
       <td style="text-align:center;">${checkIcon(followUp)}</td>
       <td style="text-align:center;">${checkIcon(leadsSheet)}</td>
       <td style="text-align:center;">${checkIcon(hsSync)}</td>
