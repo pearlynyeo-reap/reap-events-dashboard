@@ -527,7 +527,10 @@
     <div class="section-sub">Reap's events (⭐ = committed, i.e. confirmed or attended; everything else is under consideration). Toggle <strong>+ Watchlist (Sales-led)</strong> to add sales-led events we're monitoring but haven't committed to — currently LATAM-weighted, not yet built out for other regions. Priority Tier 3 = sales-led / monitor. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab.</div>
 
     <div class="filter-row" style="margin-bottom:10px;">
-      <span style="font-size:11px;font-weight:700;color:var(--text-muted);align-self:center;margin-right:4px;">SHOW</span>
+      <span style="font-size:11px;font-weight:700;color:var(--text-muted);align-self:center;margin-right:4px;">YEAR</span>
+      <button class="filter-btn active" onclick="setRosterYear('2026', this)">2026</button>
+      <button class="filter-btn" onclick="setRosterYear('2027', this)">2027</button>
+      <span style="font-size:11px;font-weight:700;color:var(--text-muted);align-self:center;margin:0 4px 0 14px;">SHOW</span>
       <button class="filter-btn active" onclick="setRosterScope('committed', this)">Reap events</button>
       <button class="filter-btn" onclick="setRosterScope('all', this)">+ Watchlist (Sales-led)</button>
     </div>
@@ -901,7 +904,6 @@ const EVENTS = [
   // UPCOMING / PLANNED
   { name: "Blockchain Rio", region: "LATAM", date: "Aug 11–13, 2026", tier: "Signature", status: "completed", budget_proposed: 35000, budget_actual: 29600, mortem_status: "done", budget_reconciled: true, hubspot_synced: false, leads_target: 100, leads_actual: 1279, opps_target: 12, opps_actual: 40, pipeline_target: 175000, pipeline_actual: null, overdue_days: null, notes: "✅ COMPLETED + post-mortem done (Aug 17). Budget reconciled at $29,600 (Platinum + Kraken Brazil co-sponsorship). 1,279 marketing contacts (250 booth + 1,029 side event), 40 qualified leads (Blinq), CPL $740. 1 closed-won: Avenia (Cards API, now full-stack). Cards API = clear LATAM wedge (Mercado Bitcoin, Liberpay, Meru·CO, Belo·AR). Gaps: organizer reliability poor, Bridge side-party underdelivered, need booth demos (iPhones/TV) + live content layer. Pending: HubSpot drip sync for 250 leads." },
   { name: "Korea Blockchain Week", region: "APAC", date: "Aug/Sep 2026 · Seoul", tier: "Non-Signature", status: "confirmed", budget_proposed: 3000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🟢 CONFIRMED — going, PR-led (no booth/sponsorship): Arjun speaking, Daren pitched for 3 slots, Payward/Kraken co-activation. ~$3K speaking-only. Owners: Pearlyn, Sue Ann, Sales." },
-  { name: "European Blockchain Conv (Barcelona)", region: "RoW", date: "Sep 16–17, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Europe — parked as TBC. (Was: first Kraken co-branding trial, Tier 1 per H2 strategy.)" },
   { name: "Tech Safari Summit", region: "Africa", date: "Sep 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Coordinate with Accra learnings." },
   { name: "Seamless Africa", region: "Africa", date: "Sep 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Evaluate ICP density." },
   { name: "Token 2049 SG", region: "APAC", date: "Oct 6–8, 2026 · Singapore", tier: "Signature", status: "confirmed", budget_proposed: 40000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Full proposal drafted 9 Jul: Agentic Summit (Oct 5/6) + Payward ecosystem lounge (Oct 7) + FaaS closed-door side event + Daren x Arjun PR + optional guerilla activation. MAS/regulatory check in progress. VIK ask ~$40K (Tier 1). Tier/budget scoping due before Aug. Owners: Pearlyn, Sue Ann, Rachel." },
@@ -911,10 +913,8 @@ const EVENTS = [
   { name: "Africa Stablecoin Summit", region: "Africa", date: "Nov 12–13, 2026", tier: "Signature", status: "consideration", budget_proposed: 28000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Reap's signature Africa moment. Ian. VIK doc: ~$28K stage sponsorship (Tier 2) — flagged as judgment call on whether it goes in the room. Still needs go/no-go decision." },
   { name: "HK Fintech Week", region: "APAC", date: "Nov 2–6, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 25000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pearlyn, Sue Ann, Rachel. VIK ask ~$25K (sponsorship share + activation, Tier 2)." },
   { name: "SG Fintech Week", region: "APAC", date: "Nov 18–20, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 20000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Pearlyn, Sue Ann, Rachel. VIK ask ~$20K (sponsorship share, Tier 2). Confirm = Singapore FinTech Festival." },
-  { name: "SALT London", region: "RoW", date: "Nov 3–4, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Europe — parked as TBC. (Tier 1 per H2 strategy.)" },
   { name: "BSL Colombia", region: "LATAM", date: "Nov 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Lucas. Go/no-go needed." },
   { name: "Solana Breakpoint", region: "RoW", date: "Nov 15–17, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 80000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🟢 CONFIRMED — Solana Breakpoint London (Nov 15–17). Forecast ~$80K, aiming to fund via VIK (Visa in-kind) — same approach as HK FinTech Week (net Reap cash TBC). Non-Signature; ecosystem side event contingent on co-host confirmation. Owners: Marketing + CorpDev." },
-  { name: "Web Summit Lisbon", region: "RoW", date: "Nov 9–12, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Europe — parked as TBC. (Tier 2 per H2 strategy.)" },
   { name: "Blockchain Life Dubai", region: "RoW", date: "Dec 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
   { name: "Affiliate World Forum (BKK)", region: "RoW", date: "Dec 9–10, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ Cancún, total ~$32.4K. Dec 2026." },
   { name: "Affiliate World Forum (Cancun)", region: "LATAM", date: "Sep 7–8, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ BKK, total ~$32.4K. ⚠️ VIK discrepancy: VIK doc asks $50K (booth ~$27K + side event + activation, Tier 1) — larger scope. Confirm whether Visa funding replaces or upgrades before Visa conversation. SOW pending sign-off w/ Visa. Owners: Pearlyn, Mindaugas, Anushka." },
@@ -923,11 +923,26 @@ const EVENTS = [
   { name: "Token Americas MX", region: "LATAM", date: "Aug 2026", tier: "Non-Signature", status: "closed", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🔴 CLOSED — decided no-go (per Command Centre); Aug event window passed. Sales (Jan, Lucas)." },
   { name: "Argentina LATAM Digital Assets Conf", region: "LATAM", date: "Jul 2026", tier: "Non-Signature", status: "completed", budget_proposed: 5000, budget_actual: 5000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "✅ COMPLETED — Reap attended (Jul 2026). Spent $5K (on budget, reconciled). Sales (Lucas, Jan)." },
   // ── Added 24 Aug — Merge Madrid (consideration) + new Growth events from Command Centre v28 ──
-  { name: "Merge Madrid", region: "RoW", date: "Oct 27–29, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Madrid, ES", category: "Blockchain / Institutional", priorityTier: "Tier 2", investment: "Attend only", marketImpact: "Low", presence: "LATAM Sales", date2027: "TBA", notes: "Added as consideration. Southern-Europe counterpart to Merge LATAM — Spain/EU-LATAM corridor play." },
   { name: "Blockchain Conference Brasil (BCB26)", region: "LATAM", date: "Nov 20–21, 2026", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Brazil (TBA)", category: "Blockchain & Crypto", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales (Vitor)", date2027: "TBA", notes: "🆕 Surfaced in #conference-planning (raised by Vitor, Aug). Needs owner + go/no-go." },
   { name: "Coinfest Bali", region: "APAC", date: "Aug 2026", tier: "Non-Signature", status: "completed", budget_proposed: 3000, budget_actual: 3000, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Bali, ID", category: "Blockchain & Crypto", priorityTier: "Tier 3", investment: "Side-event dinner sponsor", marketImpact: "Low", presence: "Sales (Alam)", date2027: "TBA", notes: "✅ COMPLETED — sponsored a side-event dinner (~$3K), Bali, Aug 2026. Owner: Alam." },
   { name: "Moonshot 2026 (Lagos)", region: "Africa", date: "Oct 28–29, 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Lagos, NG", category: "Tech / Startup Ecosystem", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales (Kelson)", date2027: "TBA", notes: "🆕 Surfaced in #conference-planning (raised by Kelson, Aug). Fold into Africa cluster decision. Needs go/no-go." },
   { name: "Colombia Tech Week", region: "LATAM", date: "Aug 10–16, 2026", tier: "Non-Signature", status: "completed", budget_proposed: 4200, budget_actual: 4200, mortem_status: "na", budget_reconciled: true, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Bogotá, CO", category: "Tech / Startup Ecosystem", priorityTier: "Tier 2", investment: "Attend + funded off-site", marketImpact: "Medium", presence: "LATAM Sales", date2027: "TBA", notes: "✅ COMPLETED — ran Aug 14 (funded off-site, ~$4.2K approved). 20,000+ founders/investors; VC/partner networking. Outcome capture pending." },
+  // ── 2027 events under consideration (from Payward/Kraken 2027 calendar recon; Europe excluded per request) ──
+  { name: "NRF Big Show", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "New York, US", category: "Payments & Fintech", priorityTier: "Tier 2", investment: "TBC", marketImpact: "High", presence: "Marketing + Sales", date2027: "Jan 10–12, 2027", notes: "2027 consideration (Payward/Kraken co-calendar). Payments + AI headline; potential stablecoin / agentic-checkout speaking slot." },
+  { name: "Digital Asset Summit (DAS) NYC", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "New York, US", category: "Institutional / Crypto", priorityTier: "Tier 2", investment: "TBC", marketImpact: "High", presence: "Marketing + Sales", date2027: "2027 (TBD)", notes: "2027 consideration. Institutional digital-asset / stablecoin summit — on-thesis for the institutional push." },
+  { name: "Fintech Meetup", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Las Vegas, US", category: "Payments & Fintech", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "Feb 22–24, 2027", notes: "2027 consideration. Banks/fintechs; meetings-led." },
+  { name: "Transact", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Las Vegas, US", category: "Payments & Fintech", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "Apr 19–21, 2027", notes: "2027 consideration. US payments industry (ETA)." },
+  { name: "ETHDenver", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Denver, US", category: "Crypto (dev)", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "Feb 17–21, 2027", notes: "2027 consideration. Dev/founder audience; side-event play." },
+  { name: "HumanX", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "USA (TBA)", category: "AI / Agentic", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Marketing", date2027: "Mar 7–10, 2027", notes: "2027 consideration. Agentic-payments speaking slot — fits Reap's agentic narrative." },
+  { name: "FinovateFall", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "New York, US", category: "Payments & Fintech", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Low", presence: "Marketing", date2027: "Sep 9–11, 2027", notes: "2027 consideration. Banks/fintechs, demo-led." },
+  { name: "CES", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Las Vegas, US", category: "Tech", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Low", presence: "Marketing", date2027: "Jan 6–9, 2027", notes: "2027 consideration. Attend only if a speaking slot is secured." },
+  { name: "TOKEN2049 Dubai", region: "RoW", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Dubai, UAE", category: "Crypto / Institutional", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "Apr 21–22, 2027", notes: "2027 consideration. Crypto + institutional, Middle East." },
+  { name: "Seamless Middle East", region: "RoW", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Dubai, UAE", category: "Payments & Fintech", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "May 24–26, 2027", notes: "2027 consideration. Large payments/fintech show, Middle East." },
+  { name: "Abu Dhabi Finance Week", region: "RoW", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Abu Dhabi, UAE", category: "Institutional", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Marketing + CorpDev", date2027: "Dec 7–10, 2027", notes: "2027 consideration. Institutional finance week (piggyback)." },
+  { name: "Consensus Hong Kong", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Hong Kong", category: "Crypto / Institutional", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "Feb 2027", notes: "2027 consideration. Crypto + institutional APAC; dinner / attend." },
+  { name: "Consensus x SALT HK (Institutional)", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Hong Kong", category: "Institutional", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "Feb 2027", notes: "2027 consideration. Institutional / allocator meetings programme." },
+  { name: "Money Frontier", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Hong Kong", category: "Crypto", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "Jul 27–28, 2027", notes: "2027 consideration. Crypto-native, Hong Kong." },
+  { name: "Asian Banker Summit", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Kuala Lumpur, MY", category: "Institutional / Banking", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "May 26–27, 2027", notes: "2027 consideration. Institutional banking, APAC." },
 ];
 
 // ═══════════ REGIONAL FRAMEWORK ENRICHMENT (merged from LATAM GTM Events Calendar) ═══════════
@@ -1111,7 +1126,8 @@ function switchTab(id) {
 // ─────────────────────────── ROSTER TABLE ───────────────────────────
 
 let rosterFilter = 'all';
-let rosterScope = 'committed';   // 'committed' | 'all' (adds market calendar)
+let rosterScope = 'committed';   // 'committed' | 'all' (adds watchlist)
+let rosterYear = '2026';         // '2026' | '2027'
 
 function eventUniverse() {
   const committed = EVENTS.map(e => ({ ...e, committed: true }));
@@ -1119,39 +1135,69 @@ function eventUniverse() {
   return committed.concat(LATAM_CALENDAR.map(m => ({ ...m, committed: false })));
 }
 
-// Chronological sort key from a date string ("Aug 11–13, 2026", "Nov 2026", "2026 (TBC)", ...)
+// Chronological sort key from a date string ("Aug 11–13, 2026", "Nov 2026", "TBA", ...)
 const MONTHS_SEQ = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function eventSortKey(e) {
-  const d = e.date || '';
-  const year = (d.match(/(20\d{2})/) || [])[1] ? parseInt((d.match(/(20\d{2})/))[1], 10) : 2026;
+function dateSortKey(d) {
+  d = d || '';
+  const ym = d.match(/(20\d{2})/);
+  const year = ym ? parseInt(ym[1], 10) : 9999;   // undated sort to the very end
   let month = 99;
   for (let i = 0; i < 12; i++) { if (d.includes(MONTHS_SEQ[i])) { month = i + 1; break; } }
   const dm = d.match(new RegExp('(' + MONTHS_SEQ.join('|') + ')\\s+(\\d{1,2})(?!\\d)'));  // (?!\d) so a 4-digit year isn't read as a day
   const day = dm ? parseInt(dm[2], 10) : 0;
-  return year * 10000 + month * 100 + day;   // undated (month 99) sort to the end within their year
+  return year * 10000 + month * 100 + day;
+}
+
+// Derive a 2027 status from the date2027 string (we don't track a separate 2027 status field yet)
+function status2027Of(d) {
+  d = (d || '').trim();
+  if (!d || d === '—' || /^TBA$/i.test(d) || /none announced/i.test(d) || /Merge Buenos Aires/i.test(d)) return 'tbc';
+  if (/confirmed/i.test(d) || /\d{1,2}\s*[–-]\s*\d{1,2}/.test(d)) return 'confirmed';
+  return 'consideration';   // month-level placeholder ("Feb 2027", "Mar 2027")
 }
 
 function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
+  const yr = rosterYear;
   let rows = eventUniverse();
   if (filter === 'completed') rows = rows.filter(e => e.status === 'completed');
   else if (filter === 'active') rows = rows.filter(e => ['confirmed', 'planning'].includes(e.status));
   else if (['LATAM','APAC','Africa','North America','RoW'].includes(filter)) rows = rows.filter(e => e.region === filter);
-  rows = rows.slice().sort((a, b) => eventSortKey(a) - eventSortKey(b) || a.name.localeCompare(b.name));
+  // 2026 view hides pure-2027 events (no 2026 date); 2027 view shows the full recurring roster
+  if (yr === '2026') rows = rows.filter(e => e.date && e.date !== '—');
+  const dateOf = e => yr === '2027' ? e.date2027 : e.date;
+  rows = rows.slice().sort((a, b) => dateSortKey(dateOf(a)) - dateSortKey(dateOf(b)) || a.name.localeCompare(b.name));
 
   document.getElementById('roster-body').innerHTML = rows.map(e => {
-    const isCommitted = e.committed && ['confirmed', 'completed'].includes(e.status);
-    const star = isCommitted ? '<span title="Committed — confirmed / attended" style="color:var(--indigo);font-weight:800;">⭐</span> ' : '';
+    let statusCell, isStar;
+    if (yr === '2027') {
+      const native2027 = !e.date || e.date === '—';   // 2027-native event → use its real (2027) status
+      if (native2027 && e.committed && e.status) {
+        statusCell = statusBadge(e.status);
+        isStar = ['confirmed', 'completed'].includes(e.status);
+      } else {
+        const s = status2027Of(e.date2027);
+        statusCell = statusBadge(s);
+        isStar = s === 'confirmed';
+      }
+    } else {
+      statusCell = e.committed ? statusBadge(e.status)
+        : `<span class="badge-status badge-tbc" style="font-weight:600;">${e.calStatus || 'Market'}</span>`;
+      isStar = e.committed && ['confirmed', 'completed'].includes(e.status);
+    }
+    const star = isStar ? '<span title="Committed — confirmed / attended" style="color:var(--indigo);font-weight:800;">⭐</span> ' : '';
     const sub = e.city ? `<div style="font-size:11px;color:var(--text-muted);">${e.city}${e.category ? ' · ' + e.category : ''}</div>` : '';
-    const statusCell = e.committed ? statusBadge(e.status)
-      : `<span class="badge-status badge-tbc" style="font-weight:600;">${e.calStatus || 'Market'}</span>`;
-    const budget = e.committed ? fmt(e.budget_actual || e.budget_proposed) : '<span style="color:var(--text-muted);">—</span>';
-    const d2027 = (e.date2027 && !/^TBA$/i.test(e.date2027)) ? `<div style="font-size:11px;color:var(--text-muted);">2027: ${e.date2027}</div>` : '';
+    const budget = yr === '2027' ? '<span style="color:var(--text-muted);">—</span>'
+      : (e.committed ? fmt(e.budget_actual || e.budget_proposed) : '<span style="color:var(--text-muted);">—</span>');
+    const primaryDate = (yr === '2027' ? (e.date2027 || 'TBA') : (e.date || '—'));
+    const otherLabel = yr === '2027' ? '2026' : '2027';
+    const otherVal = yr === '2027' ? e.date : e.date2027;
+    const otherHtml = (otherVal && !/^TBA$/i.test(otherVal) && otherVal !== '—') ? `<div style="font-size:11px;color:var(--text-muted);">${otherLabel}: ${otherVal}</div>` : '';
     const noteHtml = e.notes ? `<div title="${String(e.notes).replace(/"/g, '&quot;')}" style="font-size:11.5px;color:var(--text-muted);max-width:340px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${e.notes}</div>` : '—';
     return `<tr>
       <td>${star}<strong>${e.name}</strong>${sub}</td>
       <td style="font-size:12px;white-space:nowrap;">${e.region}</td>
-      <td style="white-space:nowrap;font-size:12px;">${e.date || '—'}${d2027}</td>
+      <td style="white-space:nowrap;font-size:12px;">${primaryDate}${otherHtml}</td>
       <td>${tierPill(e.priorityTier)}</td>
       <td>${impactPill(e.marketImpact)}</td>
       <td>${statusCell}</td>
@@ -1159,6 +1205,14 @@ function buildRosterTable(filter = rosterFilter) {
       <td>${noteHtml}</td>
     </tr>`;
   }).join('');
+}
+
+function setRosterYear(y, btn) {
+  rosterYear = y;
+  btn.parentNode.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildRosterFilterCounts();
+  buildRosterTable(rosterFilter);
 }
 
 // Region breakdown cards on the Overview — computed from committed events
@@ -1187,7 +1241,8 @@ function buildRegionCards() {
 
 // Roster filter button counts — computed so they never drift
 function buildRosterFilterCounts() {
-  const u = eventUniverse();
+  let u = eventUniverse();
+  if (rosterYear === '2026') u = u.filter(e => e.date && e.date !== '—');   // match the year-filtered table
   const countFor = f => f === 'all' ? u.length
     : f === 'completed' ? u.filter(e => e.status === 'completed').length
     : f === 'active' ? u.filter(e => ['confirmed', 'planning'].includes(e.status)).length
