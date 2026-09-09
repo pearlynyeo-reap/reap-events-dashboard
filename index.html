@@ -719,6 +719,8 @@
               <th>Region</th>
               <th>Contacts</th>
               <th>Leads</th>
+              <th>Cost/Contact</th>
+              <th>Cost/Lead</th>
               <th>48hr Follow-ups</th>
               <th>Leads in Sheet</th>
               <th>HubSpot Synced</th>
@@ -730,7 +732,7 @@
           <tbody id="mortem-table-body"></tbody>
         </table>
       </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Contacts = total marketing contacts (mktg + sales) · Leads = total leads acquired · “tgt” = target (actual not yet in). Source: manual lead tracker.</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Contacts = total marketing contacts (mktg + sales) · Leads = total leads acquired · Cost/Contact &amp; Cost/Lead computed from the reconciled budget ÷ contacts/leads · “tgt” = target (actual not yet in). Source: manual lead tracker.</div>
     </div>
 
     <div id="mortem-cards"></div>
@@ -1807,6 +1809,9 @@ function buildMortemCards() {
       : (e.leads_target != null ? `<span style="color:var(--text-muted);">${e.leads_target}<span style="font-size:9px;"> tgt</span></span>` : '—');
     const qualLeads = e.opps_actual != null ? e.opps_actual.toLocaleString()
       : (e.opps_target != null ? `<span style="color:var(--text-muted);">${e.opps_target}<span style="font-size:9px;"> tgt</span></span>` : '—');
+    const cost = e.budget_actual != null ? e.budget_actual : e.budget_proposed;
+    const cpc = (cost && e.leads_actual) ? `$${Math.round(cost / e.leads_actual).toLocaleString()}` : '—';
+    const cpl = (cost && e.opps_actual) ? `$${Math.round(cost / e.opps_actual).toLocaleString()}` : '—';
     const overallBadge = na
       ? '<span class="badge-status badge-completed">✓ Closed</span>'
       : done
@@ -1838,6 +1843,8 @@ function buildMortemCards() {
       <td>${e.region}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${contacts}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${qualLeads}</td>
+      <td style="text-align:center;font-size:12px;">${cpc}</td>
+      <td style="text-align:center;font-size:12px;">${cpl}</td>
       <td style="text-align:center;">${checkIcon(followUp)}</td>
       <td style="text-align:center;">${checkIcon(leadsSheet)}</td>
       <td style="text-align:center;">${checkIcon(hsSync)}</td>
