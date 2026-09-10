@@ -392,6 +392,11 @@
     .total-row td { color: var(--indigo-dark); }
     /* ── NOTES CELL ── */
     td.notes-cell { font-size: 12px; color: var(--text-muted); max-width: 260px; }
+    /* ── EDITABLE CELLS (staffing, lead capture) ── */
+    td.edit-cell { font-size: 12px; min-width: 130px; max-width: 200px; cursor: text; border-left: 1px dashed var(--border); border-right: 1px dashed var(--border); }
+    td.edit-cell:hover { background: var(--indigo-50); }
+    td.edit-cell:focus { background: #fff; outline: 2px solid var(--indigo-200); outline-offset: -2px; }
+    td.edit-cell:empty::before { content: '＋ add'; color: var(--text-muted); opacity: 0.55; font-size: 11px; }
     /* ── FORECAST SECTION ── */
     .forecast-section { background: var(--indigo-50); border: 1px solid var(--indigo-200); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 20px; }
     .forecast-section-title { font-size: 13px; font-weight: 700; color: var(--indigo-dark); margin-bottom: 10px; }
@@ -524,7 +529,7 @@
   ══════════════════════════════════════════════════════════════════ -->
   <div id="tab-roster" class="section">
     <div class="section-title">Events — Roster & Regional Calendar</div>
-    <div class="section-sub">Reap's events (⭐ = committed, i.e. confirmed or attended; everything else is under consideration). Toggle <strong>+ Watchlist (Sales-led)</strong> to add sales-led events we're monitoring but haven't committed to — currently LATAM-weighted, not yet built out for other regions. Priority Tier 3 = sales-led / monitor. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab.</div>
+    <div class="section-sub">Reap's events (⭐ = committed, i.e. confirmed or attended; everything else is under consideration). Toggle <strong>+ Watchlist (Sales-led)</strong> to add sales-led events we're monitoring but haven't committed to — currently LATAM-weighted, not yet built out for other regions. Priority Tier 3 = sales-led / monitor. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab. <strong>✎ Staffing &amp; Lead Capture columns are editable</strong> — click a cell to type; saved in your browser.</div>
 
     <div class="filter-row" style="margin-bottom:10px;">
       <span style="font-size:11px;font-weight:700;color:var(--text-muted);align-self:center;margin-right:4px;">YEAR</span>
@@ -591,6 +596,8 @@
               <th>Priority</th>
               <th>Impact</th>
               <th>Status</th>
+              <th>Staffing ✎</th>
+              <th>Lead Capture ✎</th>
               <th>Budget</th>
               <th>Notes</th>
             </tr>
@@ -1176,6 +1183,13 @@ function statusForYear(e) {
   return (native && e.status) ? e.status : status2027Of(e.date2027);
 }
 
+// Inline editable cells (staffing, lead capture) — persisted per viewer in localStorage
+function editKey(evt, field) { return 'reapEvents::' + field + '::' + evt; }
+function getEdit(evt, field) { try { return localStorage.getItem(editKey(evt, field)); } catch (e) { return null; } }
+function saveEdit(el) {
+  try { localStorage.setItem(editKey(el.dataset.evt.replace(/&quot;/g, '"'), el.dataset.field), el.textContent.trim()); } catch (e) {}
+}
+
 function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
   const yr = rosterYear;
@@ -1214,6 +1228,9 @@ function buildRosterTable(filter = rosterFilter) {
     const otherVal = yr === '2027' ? e.date : e.date2027;
     const otherHtml = (otherVal && !/^TBA$/i.test(otherVal) && otherVal !== '—') ? `<div style="font-size:11px;color:var(--text-muted);">${otherLabel}: ${otherVal}</div>` : '';
     const noteHtml = e.notes ? `<div title="${String(e.notes).replace(/"/g, '&quot;')}" style="font-size:11.5px;color:var(--text-muted);max-width:340px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${e.notes}</div>` : '—';
+    const evtKey = String(e.name).replace(/"/g, '&quot;');
+    const staffing = getEdit(e.name, 'staffing') ?? (e.presence || '');
+    const leadCap = getEdit(e.name, 'leadCapture') ?? (e.leadCapture || '');
     return `<tr>
       <td>${star}<strong>${e.name}</strong>${sub}</td>
       <td style="font-size:12px;white-space:nowrap;">${e.region}</td>
@@ -1221,6 +1238,8 @@ function buildRosterTable(filter = rosterFilter) {
       <td>${tierPill(e.priorityTier)}</td>
       <td>${impactPill(e.marketImpact)}</td>
       <td>${statusCell}</td>
+      <td class="edit-cell" contenteditable="true" data-evt="${evtKey}" data-field="staffing" onblur="saveEdit(this)">${staffing}</td>
+      <td class="edit-cell" contenteditable="true" data-evt="${evtKey}" data-field="leadCapture" onblur="saveEdit(this)">${leadCap}</td>
       <td style="white-space:nowrap;">${budget}</td>
       <td>${noteHtml}</td>
     </tr>`;
