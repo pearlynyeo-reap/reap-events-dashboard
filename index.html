@@ -585,16 +585,16 @@
         <table id="roster-table">
           <thead>
             <tr>
+              <th style="width:26px;"></th>
               <th>Event</th>
               <th>Region</th>
               <th>Date</th>
               <th>Priority</th>
-              <th>Impact</th>
               <th>Status</th>
-              <th>Staffing</th>
-              <th>Lead Capture</th>
+              <th>Investment</th>
               <th>Budget</th>
-              <th>Notes</th>
+              <th>Target Leads</th>
+              <th>Est. $/Lead</th>
             </tr>
           </thead>
           <tbody id="roster-body"></tbody>
@@ -1178,6 +1178,14 @@ function statusForYear(e) {
   return (native && e.status) ? e.status : status2027Of(e.date2027);
 }
 
+function toggleRosterDetail(i) {
+  const row = document.getElementById('rdetail-' + i);
+  const caret = document.getElementById('rcaret-' + i);
+  if (!row) return;
+  row.hidden = !row.hidden;
+  if (caret) caret.style.transform = row.hidden ? '' : 'rotate(90deg)';
+}
+
 function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
   const yr = rosterYear;
@@ -1190,7 +1198,7 @@ function buildRosterTable(filter = rosterFilter) {
   const dateOf = e => yr === '2027' ? e.date2027 : e.date;
   rows = rows.slice().sort((a, b) => dateSortKey(dateOf(a)) - dateSortKey(dateOf(b)) || a.name.localeCompare(b.name));
 
-  document.getElementById('roster-body').innerHTML = rows.map(e => {
+  document.getElementById('roster-body').innerHTML = rows.map((e, i) => {
     let statusCell, isStar;
     if (yr === '2027') {
       const native2027 = !e.date || e.date === '—';   // 2027-native event → use its real (2027) status
@@ -1215,21 +1223,35 @@ function buildRosterTable(filter = rosterFilter) {
     const otherLabel = yr === '2027' ? '2026' : '2027';
     const otherVal = yr === '2027' ? e.date : e.date2027;
     const otherHtml = (otherVal && !/^TBA$/i.test(otherVal) && otherVal !== '—') ? `<div style="font-size:11px;color:var(--text-muted);">${otherLabel}: ${otherVal}</div>` : '';
-    const noteHtml = e.notes ? `<div title="${String(e.notes).replace(/"/g, '&quot;')}" style="font-size:11.5px;color:var(--text-muted);max-width:340px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${e.notes}</div>` : '—';
     const staffing = e.staffing || e.presence || '—';
     const leadCap = e.leadCapture || '—';
-    return `<tr>
+    const invest = e.investment || '—';
+    // Target leads + est. cost-per-lead (projected economics)
+    const tgtLeads = (yr === '2027') ? null : e.leads_target;
+    const tgtCell = (tgtLeads != null && tgtLeads !== '') ? Number(tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
+    const budgetNum = e.budget_actual || e.budget_proposed;
+    const estCpl = (yr !== '2027' && budgetNum && tgtLeads) ? '$' + Math.round(budgetNum / tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
+    // Expandable detail: Staffing / Lead Capture / KPI goal / Notes
+    const kpi = e.kpiGoal || '—';
+    const detailBits = [
+      ['Staffing', staffing],
+      ['Lead capture', leadCap],
+      ['KPI goal', kpi],
+      ['Notes', e.notes || '—'],
+    ].map(([k, v]) => `<div style="margin-bottom:6px;"><span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;">${k}</span><div style="font-size:12.5px;line-height:1.5;color:var(--text);">${v}</div></div>`).join('');
+    return `<tr class="roster-main" onclick="toggleRosterDetail(${i})" style="cursor:pointer;">
+      <td style="text-align:center;color:var(--text-muted);"><span id="rcaret-${i}" style="display:inline-block;transition:transform .15s;">▸</span></td>
       <td>${star}<strong>${e.name}</strong>${sub}</td>
       <td style="font-size:12px;white-space:nowrap;">${e.region}</td>
       <td style="white-space:nowrap;font-size:12px;">${primaryDate}${otherHtml}</td>
       <td>${tierPill(e.priorityTier)}</td>
-      <td>${impactPill(e.marketImpact)}</td>
       <td>${statusCell}</td>
-      <td style="font-size:12px;">${staffing}</td>
-      <td style="font-size:12px;">${leadCap}</td>
+      <td style="font-size:12px;">${invest}</td>
       <td style="white-space:nowrap;">${budget}</td>
-      <td>${noteHtml}</td>
-    </tr>`;
+      <td style="text-align:right;font-size:12px;">${tgtCell}</td>
+      <td style="text-align:right;font-size:12px;white-space:nowrap;">${estCpl}</td>
+    </tr>
+    <tr id="rdetail-${i}" class="roster-detail" hidden><td></td><td colspan="9" style="background:var(--surface-2,#f7f7fb);padding:12px 16px;">${detailBits}</td></tr>`;
   }).join('');
 }
 
