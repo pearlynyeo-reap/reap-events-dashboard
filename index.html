@@ -1268,14 +1268,22 @@ function buildRosterTable(filter = rosterFilter) {
     const tgtCell = (tgtLeads != null && tgtLeads !== '') ? Number(tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
     const budgetNum = e.budget_actual || e.budget_proposed;
     const estCpl = (yr !== '2027' && budgetNum && tgtLeads) ? '$' + Math.round(budgetNum / tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
-    // Expandable detail: Staffing / Lead Capture / KPI goal / Notes
+    // Expandable detail: Business line / ICP / Staffing / Lead capture / KPI goal / Event calendar / Notes
     const kpi = e.kpiGoal || '—';
-    const detailBits = [
-      ['Staffing', staffing],
-      ['Lead capture', leadCap],
-      ['KPI goal', kpi],
-      ['Notes', e.notes || '—'],
-    ].map(([k, v]) => `<div style="margin-bottom:6px;"><span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;">${k}</span><div style="font-size:12.5px;line-height:1.5;color:var(--text);">${v}</div></div>`).join('');
+    const bizLine = e.businessLine || '—';
+    const icp = e.icp || '—';
+    const calLink = e.eventCalendarLink
+      ? `<a href="${e.eventCalendarLink}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">Open calendar ↗</a>`
+      : `<span style="color:var(--text-muted);opacity:.7;">🔗 link pending</span>`;
+    const cell = (k, v) => `<div><span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;">${k}</span><div style="font-size:12.5px;line-height:1.5;color:var(--text);">${v}</div></div>`;
+    const detailBits = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 18px;">`
+      + cell('Business line', bizLine)
+      + cell('ICP / Audiences', icp)
+      + cell('Staffing', staffing)
+      + cell('Lead capture', leadCap)
+      + cell('KPI goal', kpi)
+      + cell('Event calendar', calLink)
+      + `</div><div style="margin-top:10px;">` + cell('Notes', e.notes || '—') + `</div>`;
     return qHeader + `<tr class="roster-main" onclick="toggleRosterDetail(${i})" style="cursor:pointer;">
       <td style="text-align:center;color:var(--text-muted);"><span id="rcaret-${i}" style="display:inline-block;transition:transform .15s;">▸</span></td>
       <td>${star}<strong>${e.name}</strong>${sub}</td>
