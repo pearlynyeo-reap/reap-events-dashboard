@@ -1269,19 +1269,21 @@ function buildRosterTable(filter = rosterFilter) {
     const budgetNum = e.budget_actual || e.budget_proposed;
     const estCpl = (yr !== '2027' && budgetNum && tgtLeads) ? '$' + Math.round(budgetNum / tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
     // Expandable detail: Business line / ICP / Staffing / Lead capture / KPI goal / Event calendar / Notes
-    const kpi = e.kpiGoal || '—';
+    const kpiHint = 'One-line “what we walk away with”: [lead/scan target] + [meetings/convos] + [1 key win or go/no-go decision]. Keep it countable and to one line — anything longer is a Note.';
+    const kpiPlaceholder = '<span style="color:var(--text-muted);opacity:.7;font-style:italic;">e.g. 140 leads→drip; 20 mtgs; secure speaker slot</span>';
+    const kpi = e.kpiGoal || kpiPlaceholder;
     const bizLine = e.businessLine || '—';
     const icp = e.icp || '—';
     const calLink = e.eventCalendarLink
       ? `<a href="${e.eventCalendarLink}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">Open calendar ↗</a>`
       : `<span style="color:var(--text-muted);opacity:.7;">🔗 link pending</span>`;
-    const cell = (k, v) => `<div><span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;">${k}</span><div style="font-size:12.5px;line-height:1.5;color:var(--text);">${v}</div></div>`;
+    const cell = (k, v, tip) => `<div><span title="${tip || ''}" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;${tip ? 'cursor:help;border-bottom:1px dotted var(--text-muted);' : ''}">${k}${tip ? ' ⓘ' : ''}</span><div style="font-size:12.5px;line-height:1.5;color:var(--text);">${v}</div></div>`;
     const detailBits = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 18px;">`
       + cell('Business line', bizLine)
       + cell('ICP / Audiences', icp)
       + cell('Staffing', staffing)
       + cell('Lead capture', leadCap)
-      + cell('KPI goal', kpi)
+      + cell('KPI goal', kpi, kpiHint)
       + cell('Event calendar', calLink)
       + `</div><div style="margin-top:10px;">` + cell('Notes', e.notes || '—') + `</div>`;
     return qHeader + `<tr class="roster-main" onclick="toggleRosterDetail(${i})" style="cursor:pointer;">
