@@ -1,0 +1,11 @@
+# Plaintext dashboard source — NEVER commit (only the encrypted index.html is published)
+dashboard.html
+
+# StatiCrypt working dir + config (salt is fine to keep local)
+.staticrypt-out/
+.staticrypt.json
+
+# Tooling / OS
+node_modules/
+.DS_Store
+second-brain/
