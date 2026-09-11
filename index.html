@@ -158,7 +158,7 @@
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
     /* ── REGIONAL CARDS ── */
-    .region-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+    .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 20px; }
     .region-card {
       background: var(--white);
       border-radius: var(--radius);
@@ -431,7 +431,7 @@
         <div class="header-logo">R</div>
         <div>
           <div class="header-title">Reap Events Master Dashboard 2026</div>
-          <div class="header-sub">Tracking <span id="hdr-event-count">34</span> events across 6 regions — Q1 → Q4 &nbsp;·&nbsp; Owner: Pearlyn Yeo, GTM &amp; Brand Lead</div>
+          <div class="header-sub">Tracking <span id="hdr-event-count">34</span> events across <span id="hdr-region-count">6</span> regions — Q1 → Q4 &nbsp;·&nbsp; Owner: Pearlyn Yeo, GTM &amp; Brand Lead</div>
         </div>
       </div>
       <div class="header-meta">
@@ -460,7 +460,7 @@
     <div class="kpi-card">
       <div class="kpi-label">Total Events 2026</div>
       <div class="kpi-value" id="kpi-total-events">34</div>
-      <div class="kpi-sub">Across 6 global regions</div>
+      <div class="kpi-sub">Across <span id="kpi-region-count">6</span> global regions</div>
     </div>
     <div class="kpi-card success">
       <div class="kpi-label">Completed Events</div>
@@ -556,6 +556,8 @@
       <button class="filter-btn" onclick="filterRoster('APAC', this)">APAC</button>
       <button class="filter-btn" onclick="filterRoster('Africa', this)">Africa</button>
       <button class="filter-btn" onclick="filterRoster('North America', this)">USA / N. America</button>
+      <button class="filter-btn" onclick="filterRoster('Europe', this)">Europe</button>
+      <button class="filter-btn" onclick="filterRoster('MENA', this)">MENA</button>
       <button class="filter-btn" onclick="filterRoster('RoW', this)">Rest of World</button>
     </div>
 
@@ -948,7 +950,7 @@ const EVENTS = [
   { name: "Argentina Fintech Forum", region: "LATAM", date: "Oct 29, 2026", tier: "Non-Signature", status: "consideration", priorityTier: "Tier 1", marketImpact: "High", investment: "Gold + Booth + Speaking", city: "Buenos Aires, AR", category: "Fintech & Payments", presence: "Brazil + bilingual", date2027: "TBA", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: 200, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, kpiGoal: "200 leads; 30 convos; regulator mtgs", leadCapture: "Booth + Blinq + organizer list", notes: "9th ed. Regulators + CryptoMate/BPal. Same BA trip as LABITCONF." },
   { name: "Colombia Blockchain Week", region: "LATAM", date: "Dec 11–12, 2026", tier: "Non-Signature", status: "consideration", priorityTier: "Tier 2", marketImpact: "Medium", investment: "Silver–Gold if CO GTM", city: "Medellín, CO", category: "Blockchain", presence: "LATAM (1–2)", date2027: "TBA", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: 100, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, kpiGoal: "sponsor if $/lead under 50", leadCapture: "Organizer list + Blinq", notes: "New Medellín edition; $5K–$25K tiers." },
   { name: "Solana Breakpoint", region: "RoW", date: "Nov 15–17, 2026", tier: "Non-Signature", status: "confirmed", budget_proposed: 80000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "🟢 CONFIRMED — Solana Breakpoint London (Nov 15–17). Forecast ~$80K, aiming to fund via VIK (Visa in-kind) — same approach as HK FinTech Week (net Reap cash TBC). Non-Signature; ecosystem side event contingent on co-host confirmation. Owners: Marketing + CorpDev." },
-  { name: "Blockchain Life Dubai", region: "RoW", date: "Dec 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
+  { name: "Blockchain Life Dubai", region: "MENA", date: "Dec 2026", tier: "Non-Signature", status: "tbc", budget_proposed: null, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Assign owner. Go/no-go." },
   { name: "Affiliate World Forum (BKK)", region: "RoW", date: "Dec 9–10, 2026", leadCapture: "Blinq scans + booth scans", tier: "Non-Signature", status: "confirmed", budget_proposed: 17000, budget_actual: null, mortem_status: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ Cancún, total ~$32.4K. Dec 2026." },
   { name: "Affiliate World Forum (Cancun)", region: "LATAM", date: "Sep 7–8, 2026", leadCapture: "Blinq scans + booth scans", tier: "Non-Signature", status: "completed", budget_proposed: 17000, budget_actual: null, mortem_status: "pending", hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, notes: "Confirmed — booth sponsorship $17K (single event). If combined w/ BKK, total ~$32.4K. ⚠️ VIK discrepancy: VIK doc asks $50K (booth ~$27K + side event + activation, Tier 1) — larger scope. Confirm whether Visa funding replaces or upgrades before Visa conversation. SOW pending sign-off w/ Visa. Owners: Pearlyn, Mindaugas, Anushka." },
   // NEW EVENTS (added Jul 13)
@@ -969,9 +971,9 @@ const EVENTS = [
   { name: "HumanX", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "USA (TBA)", category: "AI / Agentic", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Marketing", date2027: "Mar 7–10, 2027", notes: "2027 consideration. Agentic-payments speaking slot — fits Reap's agentic narrative." },
   { name: "FinovateFall", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "New York, US", category: "Payments & Fintech", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Low", presence: "Marketing", date2027: "Sep 9–11, 2027", notes: "2027 consideration. Banks/fintechs, demo-led." },
   { name: "CES", region: "North America", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Las Vegas, US", category: "Tech", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Low", presence: "Marketing", date2027: "Jan 6–9, 2027", notes: "2027 consideration. Attend only if a speaking slot is secured." },
-  { name: "TOKEN2049 Dubai", region: "RoW", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Dubai, UAE", category: "Crypto / Institutional", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "Apr 21–22, 2027", notes: "2027 consideration. Crypto + institutional, Middle East." },
-  { name: "Seamless Middle East", region: "RoW", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Dubai, UAE", category: "Payments & Fintech", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "May 24–26, 2027", notes: "2027 consideration. Large payments/fintech show, Middle East." },
-  { name: "Abu Dhabi Finance Week", region: "RoW", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Abu Dhabi, UAE", category: "Institutional", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Marketing + CorpDev", date2027: "Dec 7–10, 2027", notes: "2027 consideration. Institutional finance week (piggyback)." },
+  { name: "TOKEN2049 Dubai", region: "MENA", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Dubai, UAE", category: "Crypto / Institutional", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "Apr 21–22, 2027", notes: "2027 consideration. Crypto + institutional, Middle East." },
+  { name: "Seamless Middle East", region: "MENA", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Dubai, UAE", category: "Payments & Fintech", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "May 24–26, 2027", notes: "2027 consideration. Large payments/fintech show, Middle East." },
+  { name: "Abu Dhabi Finance Week", region: "MENA", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Abu Dhabi, UAE", category: "Institutional", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Marketing + CorpDev", date2027: "Dec 7–10, 2027", notes: "2027 consideration. Institutional finance week (piggyback)." },
   { name: "Consensus Hong Kong", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Hong Kong", category: "Crypto / Institutional", priorityTier: "Tier 2", investment: "TBC", marketImpact: "Medium", presence: "Marketing + Sales", date2027: "Feb 2027", notes: "2027 consideration. Crypto + institutional APAC; dinner / attend." },
   { name: "Consensus x SALT HK (Institutional)", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Hong Kong", category: "Institutional", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "Feb 2027", notes: "2027 consideration. Institutional / allocator meetings programme." },
   { name: "Money Frontier", region: "APAC", date: "—", tier: "Non-Signature", status: "consideration", budget_proposed: null, budget_actual: null, mortem_status: null, budget_reconciled: null, hubspot_synced: false, leads_target: null, leads_actual: null, opps_target: null, opps_actual: null, pipeline_target: null, pipeline_actual: null, overdue_days: null, city: "Hong Kong", category: "Crypto", priorityTier: "Tier 3", investment: "TBC", marketImpact: "Medium", presence: "Sales", date2027: "Jul 27–28, 2027", notes: "2027 consideration. Crypto-native, Hong Kong." },
@@ -1222,7 +1224,7 @@ function buildRosterTable(filter = rosterFilter) {
   let rows = eventUniverse();
   if (filter === 'completed') rows = rows.filter(e => statusForYear(e) === 'completed');
   else if (filter === 'active') rows = rows.filter(e => ['confirmed', 'planning'].includes(statusForYear(e)));
-  else if (['LATAM','APAC','Africa','North America','RoW'].includes(filter)) rows = rows.filter(e => e.region === filter);
+  else if (['LATAM','APAC','Africa','North America','Europe','MENA','RoW'].includes(filter)) rows = rows.filter(e => e.region === filter);
   // 2026 view hides pure-2027 events (no 2026 date); 2027 view shows the full recurring roster
   if (yr === '2026') rows = rows.filter(e => e.date && e.date !== '—');
   const dateOf = e => yr === '2027' ? e.date2027 : e.date;
@@ -1304,6 +1306,8 @@ function buildRegionCards() {
     { key: 'APAC', flag: '🌏', name: 'APAC' },
     { key: 'Africa', flag: '🌍', name: 'Africa' },
     { key: 'North America', flag: '🇺🇸', name: 'North America' },
+    { key: 'Europe', flag: '🇪🇺', name: 'Europe' },
+    { key: 'MENA', flag: '🕌', name: 'MENA' },
     { key: 'RoW', flag: '🌐', name: 'Rest of World' },
   ];
   const labels = [['completed', 'completed'], ['confirmed', 'confirmed'], ['planning', 'planning'], ['consideration', 'consideration'], ['tbc', 'TBC'], ['closed', 'closed']];
@@ -1383,7 +1387,9 @@ const REGION_GROUPS = [
   { key: 'APAC', label: '🌏 APAC', hint: 'Singapore · Hong Kong · Bangkok · Seoul' },
   { key: 'North America', label: '🇺🇸 USA — 2027 focus', hint: 'Las Vegas · Miami · Washington DC — split out for the 2027 US push' },
   { key: 'Africa', label: '🌍 Africa', hint: 'Accra · Nairobi + emerging stablecoin markets' },
-  { key: 'RoW', label: '🌐 Rest of World / Europe', hint: 'Madrid · London · Lisbon · Barcelona · Dubai' },
+  { key: 'Europe', label: '🇪🇺 Europe', hint: 'Madrid · London · Lisbon · Barcelona' },
+  { key: 'MENA', label: '🕌 MENA', hint: 'Dubai · Abu Dhabi + Gulf markets' },
+  { key: 'RoW', label: '🌐 Rest of World', hint: 'Global / multi-region events' },
 ];
 const TIER_ORDER = { 'Tier 1': 1, 'Tier 2': 2, 'Tier 3': 3 };
 
@@ -2258,6 +2264,9 @@ function init() {
   const put = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   put('kpi-total-events', total);
   put('hdr-event-count', total);
+  const regionCount = new Set(EVENTS.map(e => e.region)).size;
+  put('hdr-region-count', regionCount);
+  put('kpi-region-count', regionCount);
   put('badge-status-total', total + ' Total');
   buildRegionCards();
   buildRosterFilterCounts();
