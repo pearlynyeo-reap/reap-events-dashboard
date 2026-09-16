@@ -236,6 +236,7 @@
       background: linear-gradient(160deg, #0b1120 0%, #1e1b4b 100%);
       display: flex; align-items: center; justify-content: center; padding: 20px;
     }
+    #login-overlay[hidden] { display: none !important; }   /* ID selector beats [hidden] otherwise */
     .login-card {
       width: 100%; max-width: 380px; background: #fff; border-radius: 16px;
       padding: 34px 30px; box-shadow: 0 24px 60px rgba(0,0,0,.35); text-align: left;
@@ -509,7 +510,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 13</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 14</div>
   </div>
 </div>
 
@@ -2466,11 +2467,17 @@ async function loadEventsFromDB() {
 }
 
 function showLogin(msg) {
-  document.getElementById('login-overlay').hidden = false;
+  const o = document.getElementById('login-overlay');
+  o.hidden = false;
+  o.style.display = 'flex';
   if (msg) document.getElementById('login-status').textContent = msg;
 }
 function hideLogin() {
-  document.getElementById('login-overlay').hidden = true;
+  const o = document.getElementById('login-overlay');
+  o.hidden = true;
+  o.style.display = 'none';
+  const st = document.getElementById('login-status');
+  if (st) st.textContent = '';
 }
 
 const ALLOWED_DOMAIN = 'reap.hk';
