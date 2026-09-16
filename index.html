@@ -506,7 +506,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 11</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 12</div>
   </div>
 </div>
 
@@ -2482,9 +2482,9 @@ async function emailSignIn() {
   const { email, pass, status } = loginCreds();
   if (!email || !pass) { status.textContent = 'Enter your email and password.'; return; }
   status.textContent = 'Signing in…';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) status.textContent = error.message + ' — new here? tap “Create account”.';
-  // success: onAuthStateChange → handleSession loads the dashboard
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { status.textContent = error.message + ' — new here? tap “Create account”.'; return; }
+  if (data && data.session) handleSession(data.session);   // drive the load directly
 }
 async function emailSignUp() {
   const { email, pass, status } = loginCreds();
@@ -2493,7 +2493,7 @@ async function emailSignUp() {
   status.textContent = 'Creating account…';
   const { data, error } = await sb.auth.signUp({ email, password: pass });
   if (error) { status.textContent = 'Error: ' + error.message; return; }
-  if (data.session) return;   // confirmation off → signed in immediately
+  if (data.session) { handleSession(data.session); return; }   // confirmation off → drive load
   status.textContent = 'Account created. Now tap “Sign in”.';
 }
 async function signOut() { await sb.auth.signOut(); location.reload(); }
