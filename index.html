@@ -507,7 +507,7 @@
       Continue with Google
     </button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 9</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 10</div>
   </div>
 </div>
 
@@ -2447,7 +2447,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // Custom no-op lock: the default navigator.locks-based lock can deadlock authenticated
 // calls after OAuth (symptom: hangs on "Loading events…"). Single-tab app, so this is safe.
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: { lock: async (_name, _timeout, fn) => await fn(), flowType: 'implicit' }
+  auth: { lock: async (_name, _timeout, fn) => await fn() }
 });
 let CURRENT_USER = null;
 let __booted = false;
