@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Reap Events Master Dashboard 2026</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -506,7 +509,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 12</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 13</div>
   </div>
 </div>
 
@@ -2484,7 +2487,7 @@ async function emailSignIn() {
   status.textContent = 'Signing in…';
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   if (error) { status.textContent = error.message + ' — new here? tap “Create account”.'; return; }
-  if (data && data.session) handleSession(data.session);   // drive the load directly
+  if (data && data.session) enterApp(data.session);
 }
 async function emailSignUp() {
   const { email, pass, status } = loginCreds();
@@ -2493,7 +2496,7 @@ async function emailSignUp() {
   status.textContent = 'Creating account…';
   const { data, error } = await sb.auth.signUp({ email, password: pass });
   if (error) { status.textContent = 'Error: ' + error.message; return; }
-  if (data.session) { handleSession(data.session); return; }   // confirmation off → drive load
+  if (data.session) { enterApp(data.session); return; }
   status.textContent = 'Account created. Now tap “Sign in”.';
 }
 async function signOut() { await sb.auth.signOut(); location.reload(); }
@@ -2506,54 +2509,43 @@ function urlAuthError() {
   return err ? decodeURIComponent(err.replace(/\+/g, ' ')) : null;
 }
 
-let __handling = false;
-async function handleSession(session) {
-  if (__handling) return;
+let __ready = false;      // dashboard has rendered at least once
+let __loadingP = null;    // in-flight load promise (dedupes concurrent calls)
+
+// Single, idempotent entry point. Safe to call from sign-in, sign-up, auth events, and load.
+async function enterApp(session) {
   const status = document.getElementById('login-status');
   if (!session) {
     const err = urlAuthError();
-    showLogin(err ? ('Sign-in error: ' + err) : (location.hash.length > 1 ? 'No session (URL had: ' + location.hash.slice(0, 60) + '…)' : ''));
+    showLogin(err ? ('Sign-in error: ' + err) : '');
     return;
   }
   const email = (session.user.email || '').toLowerCase();
   if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
     await sb.auth.signOut();
-    showLogin('That account (' + email + ') is not a @' + ALLOWED_DOMAIN + ' address. Use your Reap Google account.');
+    showLogin('That account (' + email + ') is not a @' + ALLOWED_DOMAIN + ' address.');
     return;
   }
-  if (__booted) { return; }        // already loaded for this session
-  __handling = true;
   CURRENT_USER = session.user;
   if (status) status.textContent = 'Loading events…';
-  try {
+  if (__loadingP) { await __loadingP; return; }   // a load is already running
+  __loadingP = (async () => {
     await loadEventsFromDB();
-  } catch (e) {
-    __handling = false;
-    console.error('[dashboard] loadEventsFromDB failed:', e);
-    showLogin('Signed in as ' + email + ', but loading events failed: ' + (e.message || e) + (e.code ? ' [' + e.code + ']' : ''));
-    return;
-  }
-  hideLogin();
-  __booted = true;
-  __handling = false;
-  init();
-  const who = document.getElementById('whoami');
-  if (who) who.textContent = email;
+    hideLogin();
+    if (__ready) { buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); }
+    else { __ready = true; init(); }
+    const who = document.getElementById('whoami');
+    if (who) who.textContent = email;
+  })();
+  try { await __loadingP; }
+  catch (e) { console.error('[dashboard] load failed:', e); showLogin('Signed in as ' + email + ', but loading events failed: ' + (e.message || e)); }
+  finally { __loadingP = null; }
 }
 
-// onAuthStateChange fires INITIAL_SESSION on load (incl. the freshly-detected OAuth
-// session) and SIGNED_IN after the redirect — the robust single entry point.
-// IMPORTANT: defer with setTimeout — calling other supabase methods (DB queries, which
-// acquire the auth lock) directly inside this callback deadlocks the client.
-sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => handleSession(session), 0); });
-
-// Fallback: if the auth event hasn't driven us shortly after load, check the session directly.
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(async () => {
-    if (__booted) return;
-    const { data: { session } } = await sb.auth.getSession();
-    handleSession(session);
-  }, 700);
+sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => enterApp(session), 0); });
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  enterApp(session);
 });
 </script>
 </body>
