@@ -2465,31 +2465,60 @@ async function signInWithGoogle() {
 }
 async function signOut() { await sb.auth.signOut(); location.reload(); }
 
-async function boot() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { showLogin(); return; }
+// Surface any auth error that came back in the URL (hash or query)
+function urlAuthError() {
+  const parts = (location.hash.slice(1) + '&' + location.search.slice(1));
+  const p = new URLSearchParams(parts);
+  const err = p.get('error_description') || p.get('error');
+  return err ? decodeURIComponent(err.replace(/\+/g, ' ')) : null;
+}
+
+let __handling = false;
+async function handleSession(session) {
+  if (__handling) return;
+  const status = document.getElementById('login-status');
+  if (!session) {
+    const err = urlAuthError();
+    showLogin(err ? ('Sign-in error: ' + err) : '');
+    return;
+  }
   const email = (session.user.email || '').toLowerCase();
   if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
     await sb.auth.signOut();
     showLogin('That account (' + email + ') is not a @' + ALLOWED_DOMAIN + ' address. Use your Reap Google account.');
     return;
   }
+  if (__booted) { return; }        // already loaded for this session
+  __handling = true;
   CURRENT_USER = session.user;
+  if (status) status.textContent = 'Loading events…';
   try {
     await loadEventsFromDB();
   } catch (e) {
-    showLogin('Signed in, but could not load events: ' + e.message);
+    __handling = false;
+    showLogin('Signed in as ' + email + ', but could not load events: ' + e.message);
     return;
   }
   hideLogin();
-  if (!__booted) { __booted = true; init(); }
-  else { buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); }
+  __booted = true;
+  __handling = false;
+  init();
   const who = document.getElementById('whoami');
-  if (who) who.textContent = CURRENT_USER.email;
+  if (who) who.textContent = email;
 }
 
-sb.auth.onAuthStateChange((_e, session) => { if (session && !__booted) boot(); });
-document.addEventListener('DOMContentLoaded', boot);
+// onAuthStateChange fires INITIAL_SESSION on load (incl. the freshly-detected OAuth
+// session) and SIGNED_IN after the redirect — the robust single entry point.
+sb.auth.onAuthStateChange((_event, session) => { handleSession(session); });
+
+// Fallback: if the auth event hasn't driven us shortly after load, check the session directly.
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(async () => {
+    if (__booted) return;
+    const { data: { session } } = await sb.auth.getSession();
+    handleSession(session);
+  }, 700);
+});
 </script>
 </body>
 </html>
