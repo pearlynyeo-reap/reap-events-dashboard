@@ -2509,7 +2509,9 @@ async function handleSession(session) {
 
 // onAuthStateChange fires INITIAL_SESSION on load (incl. the freshly-detected OAuth
 // session) and SIGNED_IN after the redirect — the robust single entry point.
-sb.auth.onAuthStateChange((_event, session) => { handleSession(session); });
+// IMPORTANT: defer with setTimeout — calling other supabase methods (DB queries, which
+// acquire the auth lock) directly inside this callback deadlocks the client.
+sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => handleSession(session), 0); });
 
 // Fallback: if the auth event hasn't driven us shortly after load, check the session directly.
 document.addEventListener('DOMContentLoaded', () => {
