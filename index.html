@@ -228,6 +228,22 @@
     .drawer-k { font-size: 12.5px; color: var(--text-muted); }
     .drawer-v { font-size: 13px; color: var(--text); line-height: 1.5; }
     .drawer-para { font-size: 13.5px; line-height: 1.6; color: var(--text); padding: 6px 0 2px; }
+    .drawer-edit {
+      border: 1px solid var(--border, #e5e7eb); background: var(--indigo, #4f46e5); color: #fff;
+      font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    }
+    .drawer-edit:hover { background: #4338ca; }
+    .ef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 8px; }
+    .ef { display: flex; flex-direction: column; gap: 4px; }
+    .ef.ef-wide { grid-column: 1 / -1; }
+    .ef > span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); font-weight: 700; }
+    .ef input, .ef select, .ef textarea {
+      width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; font-family: inherit;
+      border: 1px solid var(--border, #d1d5db); border-radius: 8px; outline: none; background: #fff; color: var(--text);
+    }
+    .ef input:focus, .ef select:focus, .ef textarea:focus { border-color: var(--indigo, #4f46e5); box-shadow: 0 0 0 3px rgba(79,70,229,.13); }
+    .ef-actions { display: flex; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    @media (max-width: 560px) { .ef-grid { grid-template-columns: 1fr; } }
     @media (max-width: 560px) { .drawer-row { grid-template-columns: 120px 1fr; gap: 10px; } }
 
     /* ── Login gate ── */
@@ -510,7 +526,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 14</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 15</div>
   </div>
 </div>
 
@@ -627,7 +643,10 @@
        TAB: ROSTER
   ══════════════════════════════════════════════════════════════════ -->
   <div id="tab-roster" class="section">
-    <div class="section-title">Events — Roster & Regional Calendar</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div class="section-title" style="margin:0;">Events — Roster & Regional Calendar</div>
+      <button class="drawer-edit" style="padding:8px 16px;font-size:13px;" onclick="openEventEditor(null)">＋ Add event</button>
+    </div>
     <div class="section-sub">Reap's events (⭐ = committed, i.e. confirmed or attended; everything else is under consideration). Toggle <strong>+ Watchlist (Sales-led)</strong> to add sales-led events we're monitoring but haven't committed to — currently LATAM-weighted, not yet built out for other regions. Priority Tier 3 = sales-led / monitor. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab.</div>
 
     <div class="filter-row" style="margin-bottom:10px;">
@@ -1013,7 +1032,10 @@
       <div id="drawer-title" class="drawer-title"></div>
       <div id="drawer-sub" class="drawer-subtitle"></div>
     </div>
-    <button class="drawer-close" onclick="closeEventDrawer()" aria-label="Close">✕</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button id="drawer-edit-btn" class="drawer-edit" onclick="openEventEditor(__drawerIndex)">✎ Edit</button>
+      <button class="drawer-close" onclick="closeEventDrawer()" aria-label="Close">✕</button>
+    </div>
   </div>
   <div id="drawer-body" class="drawer-content"></div>
 </aside>
@@ -1380,6 +1402,8 @@ function openEventDrawer(i) {
       drawerRow('Actual $/lead', pend(actCpl)) +
       drawerRow('Pipeline (USD)', pend(pipe)));
 
+  __drawerIndex = i;
+  document.getElementById('drawer-edit-btn').hidden = false;
   document.getElementById('drawer-title').textContent = e.name;
   document.getElementById('drawer-sub').textContent = loc + ' · ' + dateStr;
   document.getElementById('drawer-body').innerHTML = body;
@@ -1391,6 +1415,97 @@ function closeEventDrawer() {
   document.getElementById('drawer-backdrop').classList.remove('open');
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEventDrawer(); });
+
+// ── EDIT / ADD EVENT (writes to Supabase) ──
+let __drawerIndex = null;
+const REGION_OPTS = ['LATAM', 'APAC', 'Africa', 'North America', 'Europe', 'MENA', 'RoW'];
+const STATUS_OPTS = ['completed', 'closed', 'confirmed', 'planning', 'consideration', 'tbc'];
+const TIER_OPTS = ['Tier 1', 'Tier 2', 'Tier 3'];
+const SOURCE_OPTS = [['reap', 'Reap event'], ['watchlist', 'Watchlist (sales-led)']];
+
+function fld(label, id, val, type) {
+  return `<label class="ef"><span>${label}</span><input id="ef-${id}" type="${type || 'text'}" value="${val != null ? String(val).replace(/"/g, '&quot;') : ''}"></label>`;
+}
+function sel(label, id, val, opts) {
+  const options = opts.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${v}"${v === val ? ' selected' : ''}>${t}</option>`; }).join('');
+  return `<label class="ef"><span>${label}</span><select id="ef-${id}">${options}</select></label>`;
+}
+function area(label, id, val) {
+  return `<label class="ef ef-wide"><span>${label}</span><textarea id="ef-${id}" rows="3">${val != null ? String(val).replace(/</g, '&lt;') : ''}</textarea></label>`;
+}
+
+function openEventEditor(i) {
+  const e = (i == null) ? {} : ((window.__rosterRows || [])[i] || {});
+  const isNew = (i == null);
+  __drawerIndex = i;
+  document.getElementById('drawer-edit-btn').hidden = true;
+  document.getElementById('drawer-title').textContent = isNew ? 'Add event' : 'Edit event';
+  document.getElementById('drawer-sub').textContent = isNew ? 'New event → saved to the shared database' : 'Editing · saved to the shared database';
+  document.getElementById('drawer-body').innerHTML =
+    `<div class="ef-grid">
+      ${fld('Event name', 'name', e.name)}
+      ${sel('Source', 'source', e.source || 'reap', SOURCE_OPTS)}
+      ${sel('Region', 'region', e.region || 'LATAM', REGION_OPTS)}
+      ${sel('Status', 'status', e.status || 'consideration', STATUS_OPTS)}
+      ${sel('Priority', 'priorityTier', e.priorityTier || 'Tier 2', TIER_OPTS)}
+      ${fld('Date (2026)', 'date', e.date)}
+      ${fld('City', 'city', e.city)}
+      ${fld('Business line', 'businessLine', e.businessLine)}
+      ${fld('Investment / what we do', 'investment', e.investment)}
+      ${fld('Budget total (USD)', 'budget_proposed', e.budget_proposed, 'number')}
+      ${fld('Expected leads', 'leads_target', e.leads_target, 'number')}
+      ${fld('Industries', 'industries', e.industries)}
+      ${fld('Audience / ICP', 'icp', e.icp)}
+      ${fld('Staffing', 'staffing', e.staffing || e.presence)}
+      ${fld('Lead capture', 'leadCapture', e.leadCapture)}
+      ${fld('KPI goal', 'kpiGoal', e.kpiGoal)}
+      ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink)}
+      ${area('Why we go / notes', 'notes', e.notes)}
+    </div>
+    <div class="ef-actions">
+      <button class="login-btn" style="width:auto;padding:10px 20px;margin:0;" onclick="saveEvent(${isNew ? 'null' : i})">${isNew ? 'Create event' : 'Save changes'}</button>
+      <button class="login-btn login-secondary" style="width:auto;padding:10px 20px;margin:0;" onclick="${isNew ? 'closeEventDrawer()' : 'openEventDrawer(' + i + ')'}">Cancel</button>
+      <span id="ef-status" style="font-size:12px;color:var(--text-muted);"></span>
+    </div>`;
+  document.getElementById('event-drawer').classList.add('open');
+  document.getElementById('drawer-backdrop').classList.add('open');
+}
+
+async function saveEvent(i) {
+  const isNew = (i == null);
+  const base = isNew ? {} : { ...((window.__rosterRows || [])[i] || {}) };
+  const st = document.getElementById('ef-status');
+  const g = id => { const el = document.getElementById('ef-' + id); return el ? el.value.trim() : ''; };
+  const num = id => { const v = g(id); return v === '' ? null : Number(v); };
+  const name = g('name');
+  if (!name) { st.textContent = 'Event name is required.'; return; }
+  const rowId = base._id;
+  // build the event object (drop internal _id)
+  const obj = { ...base };
+  delete obj._id;
+  Object.assign(obj, {
+    name, source: g('source'), region: g('region'), status: g('status'),
+    priorityTier: g('priorityTier'), date: g('date') || null, city: g('city') || null,
+    businessLine: g('businessLine') || null, investment: g('investment') || null,
+    budget_proposed: num('budget_proposed'), leads_target: num('leads_target'),
+    industries: g('industries') || null, icp: g('icp') || null,
+    staffing: g('staffing') || null, leadCapture: g('leadCapture') || null,
+    kpiGoal: g('kpiGoal') || null, eventCalendarLink: g('eventCalendarLink') || null,
+    notes: g('notes') || null,
+  });
+  const rowFields = { name, region: obj.region, status: obj.status, source: obj.source, sort_date: obj.date || '', data: obj };
+  st.textContent = 'Saving…';
+  let error;
+  if (isNew) ({ error } = await sb.from('events').insert(rowFields));
+  else ({ error } = await sb.from('events').update(rowFields).eq('id', rowId));
+  if (error) { st.textContent = 'Error: ' + error.message; return; }
+  await loadEventsFromDB();
+  buildRegionCards(); buildRosterFilterCounts(); buildRosterTable();
+  buildBudgetTables(); buildMortemCards();
+  // re-open the saved event in view mode (find it by name in the fresh rows)
+  const idx = (window.__rosterRows || []).findIndex(x => x.name === name);
+  if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
+}
 
 function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
