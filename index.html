@@ -254,6 +254,11 @@
       background: #4f46e5; border: none; border-radius: 10px; cursor: pointer;
     }
     .login-btn:hover { background: #4338ca; }
+    .login-btn.login-google {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #fff; color: #1f2937; border: 1px solid #d1d5db;
+    }
+    .login-btn.login-google:hover { background: #f9fafb; border-color: #9ca3af; }
     .login-status { font-size: 12.5px; color: #4b5563; margin-top: 14px; line-height: 1.5; min-height: 18px; }
     thead th {
       background: var(--bg);
@@ -496,10 +501,11 @@
   <div class="login-card">
     <div class="login-brand"><span class="login-logo">R</span> Reap Events</div>
     <div class="login-title">Sign in to continue</div>
-    <div class="login-sub">Reap internal. Enter your work email and we'll send you a one-time sign-in link.</div>
-    <input id="login-email" type="email" placeholder="you@reap.hk" autocomplete="email"
-           onkeydown="if(event.key==='Enter')sendMagicLink()" />
-    <button class="login-btn" onclick="sendMagicLink()">Send sign-in link</button>
+    <div class="login-sub">Reap internal. Sign in with your <strong>@reap.hk</strong> Google account.</div>
+    <button class="login-btn login-google" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6c-2.1 1.6-4.8 2.6-7.7 2.6-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.6 5.6C41.4 36.4 44 30.7 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
     <div id="login-status" class="login-status"></div>
   </div>
 </div>
@@ -2447,19 +2453,27 @@ function hideLogin() {
   document.getElementById('login-overlay').hidden = true;
 }
 
-async function sendMagicLink() {
-  const email = (document.getElementById('login-email').value || '').trim();
+const ALLOWED_DOMAIN = 'reap.hk';
+async function signInWithGoogle() {
   const status = document.getElementById('login-status');
-  if (!email) { status.textContent = 'Enter your email first.'; return; }
-  status.textContent = 'Sending…';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split('#')[0] } });
-  status.textContent = error ? ('Error: ' + error.message) : ('✓ Check ' + email + ' for a sign-in link, then come back to this tab.');
+  status.textContent = 'Redirecting to Google…';
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: location.href.split('#')[0].split('?')[0], queryParams: { hd: ALLOWED_DOMAIN, prompt: 'select_account' } }
+  });
+  if (error) status.textContent = 'Error: ' + error.message;
 }
 async function signOut() { await sb.auth.signOut(); location.reload(); }
 
 async function boot() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showLogin(); return; }
+  const email = (session.user.email || '').toLowerCase();
+  if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
+    await sb.auth.signOut();
+    showLogin('That account (' + email + ') is not a @' + ALLOWED_DOMAIN + ' address. Use your Reap Google account.');
+    return;
+  }
   CURRENT_USER = session.user;
   try {
     await loadEventsFromDB();
