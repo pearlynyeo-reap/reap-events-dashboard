@@ -2438,9 +2438,12 @@ let CURRENT_USER = null;
 let __booted = false;
 
 async function loadEventsFromDB() {
-  const { data, error } = await sb.from('events').select('id, source, data').order('name');
+  const q = sb.from('events').select('id, source, data').order('name');
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timed out after 10s')), 10000));
+  const { data, error } = await Promise.race([q, timeout]);
   if (error) throw error;
   const rows = data || [];
+  console.log('[dashboard] loaded rows:', rows.length);
   EVENTS = rows.filter(r => (r.source || 'reap') !== 'watchlist').map(r => ({ ...r.data, _id: r.id }));
   LATAM_CALENDAR = rows.filter(r => (r.source || 'reap') === 'watchlist').map(r => ({ ...r.data, _id: r.id }));
 }
@@ -2479,7 +2482,7 @@ async function handleSession(session) {
   const status = document.getElementById('login-status');
   if (!session) {
     const err = urlAuthError();
-    showLogin(err ? ('Sign-in error: ' + err) : '');
+    showLogin(err ? ('Sign-in error: ' + err) : (location.hash.length > 1 ? 'No session (URL had: ' + location.hash.slice(0, 60) + '…)' : ''));
     return;
   }
   const email = (session.user.email || '').toLowerCase();
@@ -2496,7 +2499,8 @@ async function handleSession(session) {
     await loadEventsFromDB();
   } catch (e) {
     __handling = false;
-    showLogin('Signed in as ' + email + ', but could not load events: ' + e.message);
+    console.error('[dashboard] loadEventsFromDB failed:', e);
+    showLogin('Signed in as ' + email + ', but loading events failed: ' + (e.message || e) + (e.code ? ' [' + e.code + ']' : ''));
     return;
   }
   hideLogin();
