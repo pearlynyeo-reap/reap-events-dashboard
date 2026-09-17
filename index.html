@@ -555,7 +555,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 24</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 25</div>
   </div>
 </div>
 
@@ -1495,9 +1495,9 @@ function openEventEditor(i) {
       ${sel('Type', 'source', e.source || 'reap', SOURCE_OPTS, 'Reap event = we may attend/commit (counts in budget & KPIs). Sales-led = monitoring only; shows under Consideration with a SALES-LED tag.')}
       ${sel('Status', 'status', e.status || 'consideration', STATUS_OPTS, 'Pipeline stage. New events default to Consideration.')}
       ${sel('Priority', 'priorityTier', e.priorityTier || 'Tier 2', TIER_OPTS, 'Tier 1 Flagship · Tier 2 Strategic · Tier 3 Monitor.')}
-      ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”. Leave blank if TBD.')}
-      ${fld('City', 'city', e.city, 'text', 'City, Country — e.g. “Bogotá, CO”.')}
-      ${fld('Business line', 'businessLine', e.businessLine, 'text', 'Which Reap product this serves — e.g. Cards API, Business Account.')}
+      ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”.', true)}
+      ${fld('City', 'city', e.city, 'text', 'City, Country — e.g. “Bogotá, CO”.', true)}
+      ${fld('Business line', 'businessLine', e.businessLine, 'text', 'Which Reap product this serves — e.g. Cards API, Business Account.', true)}
       ${fld('Investment / what we do', 'investment', e.investment, 'text', 'Planned play — e.g. “Booth + speaking”, “Attend only”.')}
       ${fld('Budget total (USD)', 'budget_proposed', e.budget_proposed, 'number', 'Estimated total cost, numbers only.')}
       ${fld('Expected leads', 'leads_target', e.leads_target, 'number', 'Target leads/contacts — drives Est. $/lead.')}
@@ -1526,6 +1526,8 @@ async function saveEvent(i) {
   const num = id => { const v = g(id); return v === '' ? null : Number(v); };
   const name = g('name');
   if (!name) { st.textContent = 'Event name is required.'; return; }
+  const missing = [['date', 'Date'], ['city', 'City'], ['businessLine', 'Business line']].filter(([id]) => !g(id)).map(([, l]) => l);
+  if (missing.length) { st.textContent = 'Required: ' + missing.join(', ') + '.'; return; }
   if (!g('notes')) { st.textContent = 'Please add a short “Why should we attend” — it’s required for evaluation.'; return; }
   const rowId = base._id;
   // build the event object (drop internal _id)
