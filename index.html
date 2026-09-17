@@ -555,7 +555,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 23</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 24</div>
   </div>
 </div>
 
@@ -1464,7 +1464,7 @@ let __drawerIndex = null;
 const REGION_OPTS = ['LATAM', 'APAC', 'Africa', 'North America', 'Europe', 'MENA', 'RoW'];
 const STATUS_OPTS = ['completed', 'closed', 'confirmed', 'planning', 'consideration', 'tbc'];
 const TIER_OPTS = ['Tier 1', 'Tier 2', 'Tier 3'];
-const SOURCE_OPTS = [['reap', 'Reap event'], ['watchlist', 'Watchlist (sales-led)']];
+const SOURCE_OPTS = [['reap', 'Reap event'], ['watchlist', 'Sales-led (monitor)']];
 
 function efHead(label, desc, req) {
   return `<span>${label}${req ? ' <em class="ef-req">*</em>' : ''}</span>${desc ? `<em class="ef-desc">${desc}</em>` : ''}`;
@@ -1492,7 +1492,7 @@ function openEventEditor(i) {
     <div class="ef-grid">
       ${fld('Event name', 'name', e.name, 'text', 'The event\'s official name.', true)}
       ${sel('Region', 'region', e.region || 'LATAM', REGION_OPTS, 'Primary region — drives grouping & filters.', true)}
-      ${sel('Source', 'source', e.source || 'reap', SOURCE_OPTS, 'Reap event = we may attend. Watchlist = sales-led, monitoring only.')}
+      ${sel('Type', 'source', e.source || 'reap', SOURCE_OPTS, 'Reap event = we may attend/commit (counts in budget & KPIs). Sales-led = monitoring only; shows under Consideration with a SALES-LED tag.')}
       ${sel('Status', 'status', e.status || 'consideration', STATUS_OPTS, 'Pipeline stage. New events default to Consideration.')}
       ${sel('Priority', 'priorityTier', e.priorityTier || 'Tier 2', TIER_OPTS, 'Tier 1 Flagship · Tier 2 Strategic · Tier 3 Monitor.')}
       ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”. Leave blank if TBD.')}
