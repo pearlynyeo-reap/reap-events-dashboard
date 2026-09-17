@@ -542,7 +542,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 20</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 21</div>
   </div>
 </div>
 
@@ -1401,7 +1401,7 @@ function openEventDrawer(i) {
   const statusVal = e.status ? statusBadge(e.status) : (e.calStatus || null);
 
   const body =
-    drawerSection('Why we go', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
+    drawerSection('Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
     drawerSection('Commitment',
       drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
       drawerRow('Status', statusVal) +
@@ -1484,7 +1484,7 @@ function openEventEditor(i) {
       ${fld('Lead capture', 'leadCapture', e.leadCapture)}
       ${fld('KPI goal', 'kpiGoal', e.kpiGoal)}
       ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink)}
-      ${area('Why we go / notes', 'notes', e.notes)}
+      ${area('Why should we attend / notes', 'notes', e.notes)}
     </div>
     <div class="ef-actions">
       <button class="login-btn" style="width:auto;padding:10px 20px;margin:0;" onclick="saveEvent(${isNew ? 'null' : i})">${isNew ? 'Create event' : 'Save changes'}</button>
