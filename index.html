@@ -249,6 +249,16 @@
       font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer;
     }
     .drawer-edit:hover { background: #0b5d54; }
+    .eval-banner {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 10px;
+      padding: 10px 14px; font-size: 12.5px; font-weight: 700; margin: 12px 0 4px;
+    }
+    .eval-banner button {
+      margin-left: auto; border: 1px solid #d97706; background: #fff; color: #92400e;
+      font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    }
+    .eval-banner button:hover { background: #fffbeb; }
     .ef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 8px; }
     .ef { display: flex; flex-direction: column; gap: 4px; }
     .ef.ef-wide { grid-column: 1 / -1; }
@@ -542,7 +552,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 21</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 22</div>
   </div>
 </div>
 
@@ -676,6 +686,7 @@
       <button class="filter-btn active" onclick="filterRoster('active', this)">Active / Confirmed</button>
       <button class="filter-btn" onclick="filterRoster('consideration', this)">Consideration</button>
       <button class="filter-btn" onclick="filterRoster('completed', this)">Completed</button>
+      <button class="filter-btn" onclick="filterRoster('eval', this)">🆕 To evaluate</button>
       <button class="filter-btn" onclick="filterRoster('LATAM', this)">LATAM</button>
       <button class="filter-btn" onclick="filterRoster('APAC', this)">APAC</button>
       <button class="filter-btn" onclick="filterRoster('Africa', this)">Africa</button>
@@ -1399,13 +1410,18 @@ function openEventDrawer(i) {
   const actCpl = (e.budget_actual && e.opps_actual) ? '$' + Math.round(e.budget_actual / e.opps_actual).toLocaleString() : null;
   const pipe = e.pipeline_actual != null ? fmt(e.pipeline_actual) : null;
   const statusVal = e.status ? statusBadge(e.status) : (e.calStatus || null);
+  const evalBanner = e.needsEval
+    ? `<div class="eval-banner">🆕 New — awaiting evaluation${e.createdBy ? ' · added by ' + e.createdBy : ''}<button onclick="markReviewed('${e._id}')">Mark reviewed</button></div>`
+    : '';
+  const addedBy = e.createdBy ? (e.createdBy + (e.createdAt ? ' · ' + new Date(e.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '')) : null;
 
-  const body =
+  const body = evalBanner +
     drawerSection('Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
     drawerSection('Commitment',
       drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
       drawerRow('Status', statusVal) +
-      drawerRow('Business line', e.businessLine)) +
+      drawerRow('Business line', e.businessLine) +
+      drawerRow('Added by', addedBy)) +
     drawerSection('Economics',
       drawerRow('Budget total (USD)', budgetV) +
       drawerRow('Expected leads', tgt) +
@@ -1517,17 +1533,40 @@ async function saveEvent(i) {
     kpiGoal: g('kpiGoal') || null, eventCalendarLink: g('eventCalendarLink') || null,
     notes: g('notes') || null,
   });
+  if (isNew) {
+    obj.createdBy = (CURRENT_USER && CURRENT_USER.email) || 'unknown';
+    obj.createdAt = new Date().toISOString();
+    obj.needsEval = true;   // new events start flagged for evaluation
+  }
   const rowFields = { name, region: obj.region, status: obj.status, source: obj.source, sort_date: obj.date || '', data: obj };
   st.textContent = 'Saving…';
   let error;
   if (isNew) ({ error } = await sb.from('events').insert(rowFields));
   else ({ error } = await sb.from('events').update(rowFields).eq('id', rowId));
   if (error) { st.textContent = 'Error: ' + error.message; return; }
+  // Notify Slack that a new event needs evaluation (no-op until the Edge Function is deployed)
+  if (isNew) {
+    try {
+      await sb.functions.invoke('notify-slack', { body: { name, region: obj.region, addedBy: obj.createdBy, priorityTier: obj.priorityTier, date: obj.date } });
+    } catch (e) { console.warn('[dashboard] slack notify skipped:', e && e.message); }
+  }
   await loadEventsFromDB();
   buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); buildUpNext();
   buildBudgetTables(); buildMortemCards();
   // re-open the saved event in view mode (find it by name in the fresh rows)
   const idx = (window.__rosterRows || []).findIndex(x => x.name === name);
+  if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
+}
+
+async function markReviewed(id) {
+  const e = (window.__rosterRows || []).find(x => x._id === id);
+  if (!e) return;
+  const obj = { ...e }; delete obj._id; obj.needsEval = false;
+  const { error } = await sb.from('events').update({ data: obj }).eq('id', id);
+  if (error) { alert('Could not mark reviewed: ' + error.message); return; }
+  await loadEventsFromDB();
+  buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); buildUpNext();
+  const idx = (window.__rosterRows || []).findIndex(x => x._id === id);
   if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
 }
 
@@ -1576,11 +1615,12 @@ function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
   const yr = rosterYear;
   let rows = eventUniverse();
-  if (['active', 'consideration', 'completed'].includes(filter)) rows = rows.filter(e => rosterBucket(e) === filter);
+  if (filter === 'eval') rows = rows.filter(e => e.needsEval);
+  else if (['active', 'consideration', 'completed'].includes(filter)) rows = rows.filter(e => rosterBucket(e) === filter);
   else if (ROSTER_REGIONS.includes(filter)) rows = rows.filter(e => e.region === filter && rosterBucket(e) !== 'closed');
   // 'all' → everything, including closed (didn't-attend) events
-  // 2026 view hides pure-2027 events (no 2026 date); 2027 view shows the full recurring roster
-  if (yr === '2026') rows = rows.filter(e => e.date && e.date !== '—');
+  // 2026 view hides pure-2027 events (no 2026 date), but always keeps events flagged for evaluation
+  if (yr === '2026') rows = rows.filter(e => (e.date && e.date !== '—') || e.needsEval);
   const dateOf = e => yr === '2027' ? e.date2027 : e.date;
   rows = rows.slice().sort((a, b) => dateSortKey(dateOf(a)) - dateSortKey(dateOf(b)) || a.name.localeCompare(b.name));
 
@@ -1607,6 +1647,7 @@ function buildRosterTable(filter = rosterFilter) {
     }
     const star = isStar ? '<span title="Committed — confirmed / attended" style="color:var(--indigo);font-weight:800;">⭐</span> ' : '';
     const salesTag = !e.committed ? ' <span title="Sales-led watchlist event" style="background:#f1f5f9;color:#475569;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:middle;white-space:nowrap;">SALES-LED</span>' : '';
+    const evalTag = e.needsEval ? ' <span title="New — awaiting evaluation" style="background:#fef3c7;color:#b45309;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:middle;white-space:nowrap;">🆕 EVAL</span>' : '';
     const sub = e.city ? `<div style="font-size:11px;color:var(--text-muted);">${e.city}${e.category ? ' · ' + e.category : ''}</div>` : '';
     const budget = yr === '2027' ? '<span style="color:var(--text-muted);">—</span>'
       : (e.committed ? fmt(e.budget_actual || e.budget_proposed) : '<span style="color:var(--text-muted);">—</span>');
@@ -1622,7 +1663,7 @@ function buildRosterTable(filter = rosterFilter) {
     const estCpl = (yr !== '2027' && budgetNum && tgtLeads) ? '$' + Math.round(budgetNum / tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
     return qHeader + `<tr class="roster-main" onclick="openEventDrawer(${i})" style="cursor:pointer;">
       <td style="text-align:center;color:var(--text-muted);font-size:13px;">›</td>
-      <td>${star}<strong>${e.name}</strong>${salesTag}${sub}</td>
+      <td>${star}<strong>${e.name}</strong>${salesTag}${evalTag}${sub}</td>
       <td style="font-size:12px;white-space:nowrap;">${e.region}</td>
       <td style="white-space:nowrap;font-size:12px;">${primaryDate}${otherHtml}</td>
       <td>${tierPill(e.priorityTier)}</td>
@@ -1672,8 +1713,9 @@ function buildRegionCards() {
 // Roster filter button counts — computed so they never drift
 function buildRosterFilterCounts() {
   let u = eventUniverse();
-  if (rosterYear === '2026') u = u.filter(e => e.date && e.date !== '—');   // match the year-filtered table
+  if (rosterYear === '2026') u = u.filter(e => (e.date && e.date !== '—') || e.needsEval);   // match the year-filtered table
   const countFor = f => f === 'all' ? u.length
+    : f === 'eval' ? u.filter(e => e.needsEval).length
     : ['active', 'consideration', 'completed'].includes(f) ? u.filter(e => rosterBucket(e) === f).length
     : u.filter(e => e.region === f && rosterBucket(e) !== 'closed').length;
   document.querySelectorAll('#roster-filters .filter-btn').forEach(b => {
