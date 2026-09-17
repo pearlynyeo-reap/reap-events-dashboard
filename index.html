@@ -542,7 +542,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 19</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 20</div>
   </div>
 </div>
 
@@ -555,7 +555,7 @@
       <span class="hchip"><b id="hdr-event-count">54</b> events</span>
       <span class="hchip"><b id="hdr-region-count">6</b> regions · Q1 → Q4</span>
       <span class="hchip">Owner · <b>Pearlyn Yeo</b></span>
-      <span class="hchip">Updated · <b>Aug 31, 2026</b></span>
+      <span class="hchip">Updated · <b id="hdr-updated">—</b></span>
     </div>
   </div>
 </div>
@@ -2628,7 +2628,7 @@ let CURRENT_USER = null;
 let __booted = false;
 
 async function loadEventsFromDB() {
-  const q = sb.from('events').select('id, source, data').order('name');
+  const q = sb.from('events').select('id, source, data, updated_at').order('name');
   const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timed out after 10s')), 10000));
   const { data, error } = await Promise.race([q, timeout]);
   if (error) throw error;
@@ -2636,6 +2636,15 @@ async function loadEventsFromDB() {
   console.log('[dashboard] loaded rows:', rows.length);
   EVENTS = rows.filter(r => (r.source || 'reap') !== 'watchlist').map(r => ({ ...r.data, _id: r.id }));
   LATAM_CALENDAR = rows.filter(r => (r.source || 'reap') === 'watchlist').map(r => ({ ...r.data, _id: r.id }));
+  // "Last updated" = most recent edit to any event
+  const times = rows.map(r => r.updated_at).filter(Boolean).sort();
+  const el = document.getElementById('hdr-updated');
+  if (el) {
+    const latest = times[times.length - 1];
+    el.textContent = latest
+      ? new Date(latest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '—';
+  }
 }
 
 function showLogin(msg) {
