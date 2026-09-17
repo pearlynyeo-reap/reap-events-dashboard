@@ -163,6 +163,22 @@
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
     /* ── REGIONAL CARDS ── */
     .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    /* ── Up next strip ── */
+    .upnext-wrap { margin: 4px 0 20px; }
+    .upnext-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--indigo, #4f46e5); margin-bottom: 8px; }
+    .upnext-label span { color: var(--text-muted); font-weight: 600; text-transform: none; letter-spacing: 0; }
+    .upnext-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .upnext-card {
+      border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 14px 16px; cursor: pointer;
+      background: var(--surface, #fff); transition: box-shadow .15s, transform .15s; border-left: 3px solid var(--indigo, #4f46e5);
+    }
+    .upnext-card:hover { box-shadow: 0 6px 20px rgba(15,23,42,.10); transform: translateY(-1px); }
+    .upnext-days { display: inline-block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; }
+    .upnext-days.soon { color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 999px; }
+    .upnext-name { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .upnext-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .upnext-budget { font-size: 12.5px; font-weight: 700; color: var(--text); margin-top: 6px; }
+    .upnext-empty { font-size: 13px; color: var(--text-muted); padding: 6px 2px; }
     .region-card {
       background: var(--white);
       border-radius: var(--radius);
@@ -526,7 +542,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 15</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 16</div>
   </div>
 </div>
 
@@ -562,8 +578,8 @@
 <!-- ════════════════════════════════════════ MAIN ════════════════════════════════════════ -->
 <div class="main">
 
-  <!-- ── KPI STRIP (always visible) ── -->
-  <div class="kpi-grid">
+  <!-- ── KPI STRIP (Overview only) ── -->
+  <div class="kpi-grid" id="kpi-strip">
     <div class="kpi-card">
       <div class="kpi-label">Total Events 2026</div>
       <div class="kpi-value" id="kpi-total-events">34</div>
@@ -646,6 +662,12 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="section-title" style="margin:0;">Events — Roster & Regional Calendar</div>
       <button class="drawer-edit" style="padding:8px 16px;font-size:13px;" onclick="openEventEditor(null)">＋ Add event</button>
+    </div>
+
+    <!-- Up next: next 3 confirmed events -->
+    <div class="upnext-wrap">
+      <div class="upnext-label">⏭ Up next <span>· next 3 confirmed events</span></div>
+      <div class="upnext-grid" id="upnext-strip"></div>
     </div>
     <div class="section-sub">Reap's events (⭐ = committed, i.e. confirmed or attended; everything else is under consideration). Toggle <strong>+ Watchlist (Sales-led)</strong> to add sales-led events we're monitoring but haven't committed to — currently LATAM-weighted, not yet built out for other regions. Priority Tier 3 = sales-led / monitor. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab.</div>
 
@@ -1289,6 +1311,8 @@ function switchTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b => {
     if (b.getAttribute('onclick') === `switchTab('${id}')`) b.classList.add('active');
   });
+  const kpi = document.getElementById('kpi-strip');
+  if (kpi) kpi.style.display = (id === 'overview') ? '' : 'none';
   if (!chartsBuilt[id]) {
     chartsBuilt[id] = true;
     buildChartsFor(id);
@@ -1500,11 +1524,52 @@ async function saveEvent(i) {
   else ({ error } = await sb.from('events').update(rowFields).eq('id', rowId));
   if (error) { st.textContent = 'Error: ' + error.message; return; }
   await loadEventsFromDB();
-  buildRegionCards(); buildRosterFilterCounts(); buildRosterTable();
+  buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); buildUpNext();
   buildBudgetTables(); buildMortemCards();
   // re-open the saved event in view mode (find it by name in the fresh rows)
   const idx = (window.__rosterRows || []).findIndex(x => x.name === name);
   if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
+}
+
+// ── Up next: next 3 confirmed events (by date, from today) ──
+function eventStartDate(d) {
+  const k = dateSortKey(d);
+  const year = Math.floor(k / 10000), month = Math.floor((k % 10000) / 100), day = k % 100;
+  if (!month || month > 12) return null;
+  return new Date(year, month - 1, day || 1);
+}
+function buildUpNext() {
+  const el = document.getElementById('upnext-strip');
+  if (!el) return;
+  const now = new Date();
+  const todayKey = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+  const up = EVENTS
+    .filter(e => e.status === 'confirmed' && dateSortKey(e.date) >= todayKey)
+    .sort((a, b) => dateSortKey(a.date) - dateSortKey(b.date))
+    .slice(0, 3);
+  if (!up.length) { el.innerHTML = '<div class="upnext-empty">No confirmed events coming up.</div>'; return; }
+  el.innerHTML = up.map(e => {
+    const dt = eventStartDate(e.date);
+    const days = dt ? Math.round((dt - now) / 86400000) : null;
+    let when = '';
+    if (days == null) when = 'upcoming';
+    else if (days <= 0) when = 'Today';
+    else if (days === 1) when = 'Tomorrow';
+    else if (days <= 7) when = 'This week';
+    else when = 'in ' + days + ' days';
+    const soon = days != null && days <= 7;
+    const budget = e.budget_proposed != null ? fmt(e.budget_actual || e.budget_proposed) : '';
+    return `<div class="upnext-card" onclick="openDrawerByName('${String(e.name).replace(/'/g, "\\'")}')">
+      <div class="upnext-days${soon ? ' soon' : ''}">${when}</div>
+      <div class="upnext-name">${e.name}</div>
+      <div class="upnext-meta">${e.region} · ${e.date || '—'}</div>
+      ${budget ? `<div class="upnext-budget">${budget}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function openDrawerByName(name) {
+  const idx = (window.__rosterRows || []).findIndex(e => e.name === name);
+  if (idx >= 0) openEventDrawer(idx);
 }
 
 function buildRosterTable(filter = rosterFilter) {
@@ -2550,6 +2615,7 @@ function init() {
   buildRegionCards();
   buildRosterFilterCounts();
   buildRosterTable();
+  buildUpNext();
   buildBudgetTables();
   buildMortemCards();
   buildForecastTable();
@@ -2654,7 +2720,7 @@ async function enterApp(session) {
   __loadingP = (async () => {
     await loadEventsFromDB();
     hideLogin();
-    if (__ready) { buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); }
+    if (__ready) { buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); buildUpNext(); }
     else { __ready = true; init(); }
     const who = document.getElementById('whoami');
     if (who) who.textContent = email;
