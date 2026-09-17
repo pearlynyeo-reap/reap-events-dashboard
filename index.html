@@ -263,6 +263,9 @@
     .ef { display: flex; flex-direction: column; gap: 4px; }
     .ef.ef-wide { grid-column: 1 / -1; }
     .ef > span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); font-weight: 700; }
+    .ef-desc { font-size: 11px; line-height: 1.35; color: var(--text-muted); font-style: normal; opacity: .85; margin: -1px 0 2px; }
+    .ef-req { color: #dc2626; font-style: normal; font-weight: 800; }
+    .ef-legend { font-size: 11px; color: var(--text-muted); margin: 6px 0 12px; }
     .ef input, .ef select, .ef textarea {
       width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; font-family: inherit;
       border: 1px solid var(--border, #d1d5db); border-radius: 8px; outline: none; background: #fff; color: var(--text);
@@ -552,7 +555,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 22</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 23</div>
   </div>
 </div>
 
@@ -1463,15 +1466,18 @@ const STATUS_OPTS = ['completed', 'closed', 'confirmed', 'planning', 'considerat
 const TIER_OPTS = ['Tier 1', 'Tier 2', 'Tier 3'];
 const SOURCE_OPTS = [['reap', 'Reap event'], ['watchlist', 'Watchlist (sales-led)']];
 
-function fld(label, id, val, type) {
-  return `<label class="ef"><span>${label}</span><input id="ef-${id}" type="${type || 'text'}" value="${val != null ? String(val).replace(/"/g, '&quot;') : ''}"></label>`;
+function efHead(label, desc, req) {
+  return `<span>${label}${req ? ' <em class="ef-req">*</em>' : ''}</span>${desc ? `<em class="ef-desc">${desc}</em>` : ''}`;
 }
-function sel(label, id, val, opts) {
+function fld(label, id, val, type, desc, req) {
+  return `<label class="ef">${efHead(label, desc, req)}<input id="ef-${id}" type="${type || 'text'}" value="${val != null ? String(val).replace(/"/g, '&quot;') : ''}"></label>`;
+}
+function sel(label, id, val, opts, desc, req) {
   const options = opts.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${v}"${v === val ? ' selected' : ''}>${t}</option>`; }).join('');
-  return `<label class="ef"><span>${label}</span><select id="ef-${id}">${options}</select></label>`;
+  return `<label class="ef">${efHead(label, desc, req)}<select id="ef-${id}">${options}</select></label>`;
 }
-function area(label, id, val) {
-  return `<label class="ef ef-wide"><span>${label}</span><textarea id="ef-${id}" rows="3">${val != null ? String(val).replace(/</g, '&lt;') : ''}</textarea></label>`;
+function area(label, id, val, desc, req) {
+  return `<label class="ef ef-wide">${efHead(label, desc, req)}<textarea id="ef-${id}" rows="3">${val != null ? String(val).replace(/</g, '&lt;') : ''}</textarea></label>`;
 }
 
 function openEventEditor(i) {
@@ -1482,25 +1488,26 @@ function openEventEditor(i) {
   document.getElementById('drawer-title').textContent = isNew ? 'Add event' : 'Edit event';
   document.getElementById('drawer-sub').textContent = isNew ? 'New event → saved to the shared database' : 'Editing · saved to the shared database';
   document.getElementById('drawer-body').innerHTML =
-    `<div class="ef-grid">
-      ${fld('Event name', 'name', e.name)}
-      ${sel('Source', 'source', e.source || 'reap', SOURCE_OPTS)}
-      ${sel('Region', 'region', e.region || 'LATAM', REGION_OPTS)}
-      ${sel('Status', 'status', e.status || 'consideration', STATUS_OPTS)}
-      ${sel('Priority', 'priorityTier', e.priorityTier || 'Tier 2', TIER_OPTS)}
-      ${fld('Date (2026)', 'date', e.date)}
-      ${fld('City', 'city', e.city)}
-      ${fld('Business line', 'businessLine', e.businessLine)}
-      ${fld('Investment / what we do', 'investment', e.investment)}
-      ${fld('Budget total (USD)', 'budget_proposed', e.budget_proposed, 'number')}
-      ${fld('Expected leads', 'leads_target', e.leads_target, 'number')}
-      ${fld('Industries', 'industries', e.industries)}
-      ${fld('Audience / ICP', 'icp', e.icp)}
-      ${fld('Staffing', 'staffing', e.staffing || e.presence)}
-      ${fld('Lead capture', 'leadCapture', e.leadCapture)}
-      ${fld('KPI goal', 'kpiGoal', e.kpiGoal)}
-      ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink)}
-      ${area('Why should we attend / notes', 'notes', e.notes)}
+    `<div class="ef-legend"><em class="ef-req">*</em> required field</div>
+    <div class="ef-grid">
+      ${fld('Event name', 'name', e.name, 'text', 'The event\'s official name.', true)}
+      ${sel('Region', 'region', e.region || 'LATAM', REGION_OPTS, 'Primary region — drives grouping & filters.', true)}
+      ${sel('Source', 'source', e.source || 'reap', SOURCE_OPTS, 'Reap event = we may attend. Watchlist = sales-led, monitoring only.')}
+      ${sel('Status', 'status', e.status || 'consideration', STATUS_OPTS, 'Pipeline stage. New events default to Consideration.')}
+      ${sel('Priority', 'priorityTier', e.priorityTier || 'Tier 2', TIER_OPTS, 'Tier 1 Flagship · Tier 2 Strategic · Tier 3 Monitor.')}
+      ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”. Leave blank if TBD.')}
+      ${fld('City', 'city', e.city, 'text', 'City, Country — e.g. “Bogotá, CO”.')}
+      ${fld('Business line', 'businessLine', e.businessLine, 'text', 'Which Reap product this serves — e.g. Cards API, Business Account.')}
+      ${fld('Investment / what we do', 'investment', e.investment, 'text', 'Planned play — e.g. “Booth + speaking”, “Attend only”.')}
+      ${fld('Budget total (USD)', 'budget_proposed', e.budget_proposed, 'number', 'Estimated total cost, numbers only.')}
+      ${fld('Expected leads', 'leads_target', e.leads_target, 'number', 'Target leads/contacts — drives Est. $/lead.')}
+      ${fld('Industries', 'industries', e.industries, 'text', 'Audience sectors — e.g. “Fintech · Payments · Banks”.')}
+      ${fld('Audience / ICP', 'icp', e.icp, 'text', 'Who we want to meet (ideal customer profile).')}
+      ${fld('Staffing', 'staffing', e.staffing || e.presence, 'text', 'Who’d attend / from which team.')}
+      ${fld('Lead capture', 'leadCapture', e.leadCapture, 'text', 'How leads get captured — Blinq, Luma, booth scans…')}
+      ${fld('KPI goal', 'kpiGoal', e.kpiGoal, 'text', 'One-line success target — e.g. “140 leads→drip; 20 mtgs”.')}
+      ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink, 'text', 'Link to the event’s agenda / schedule.')}
+      ${area('Why should we attend / notes', 'notes', e.notes, 'The rationale — this is what gets evaluated. Why is this worth our time?', true)}
     </div>
     <div class="ef-actions">
       <button class="login-btn" style="width:auto;padding:10px 20px;margin:0;" onclick="saveEvent(${isNew ? 'null' : i})">${isNew ? 'Create event' : 'Save changes'}</button>
@@ -1519,6 +1526,7 @@ async function saveEvent(i) {
   const num = id => { const v = g(id); return v === '' ? null : Number(v); };
   const name = g('name');
   if (!name) { st.textContent = 'Event name is required.'; return; }
+  if (!g('notes')) { st.textContent = 'Please add a short “Why should we attend” — it’s required for evaluation.'; return; }
   const rowId = base._id;
   // build the event object (drop internal _id)
   const obj = { ...base };
