@@ -542,7 +542,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 16</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 17</div>
   </div>
 </div>
 
@@ -669,28 +669,25 @@
       <div class="upnext-label">⏭ Up next <span>· next 3 confirmed events</span></div>
       <div class="upnext-grid" id="upnext-strip"></div>
     </div>
-    <div class="section-sub">Reap's events (⭐ = committed, i.e. confirmed or attended; everything else is under consideration). Toggle <strong>+ Watchlist (Sales-led)</strong> to add sales-led events we're monitoring but haven't committed to — currently LATAM-weighted, not yet built out for other regions. Priority Tier 3 = sales-led / monitor. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab.</div>
+    <div class="section-sub">One roster for everything — filter by status or region. ⭐ = committed (confirmed / attended). Sales-led watchlist events appear under <strong>Consideration</strong>, tagged <span style="background:#f1f5f9;color:#475569;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;">SALES-LED</span>. Budget, HubSpot sync & post-mortem close-out live in the Budget &amp; Close-out tab.</div>
 
     <div class="filter-row" style="margin-bottom:10px;">
       <span style="font-size:11px;font-weight:700;color:var(--text-muted);align-self:center;margin-right:4px;">YEAR</span>
       <button class="filter-btn active" onclick="setRosterYear('2026', this)">2026</button>
       <button class="filter-btn" onclick="setRosterYear('2027', this)">2027</button>
-      <span style="font-size:11px;font-weight:700;color:var(--text-muted);align-self:center;margin:0 4px 0 14px;">SHOW</span>
-      <button class="filter-btn active" onclick="setRosterScope('committed', this)">Reap events</button>
-      <button class="filter-btn" onclick="setRosterScope('all', this)">+ Watchlist (Sales-led)</button>
     </div>
 
     <div class="filter-row" id="roster-filters">
-      <button class="filter-btn active" onclick="filterRoster('all', this)">All</button>
+      <button class="filter-btn" onclick="filterRoster('all', this)">All</button>
+      <button class="filter-btn active" onclick="filterRoster('active', this)">Active / Confirmed</button>
+      <button class="filter-btn" onclick="filterRoster('consideration', this)">Consideration</button>
       <button class="filter-btn" onclick="filterRoster('completed', this)">Completed</button>
-      <button class="filter-btn" onclick="filterRoster('active', this)">Active / Upcoming</button>
       <button class="filter-btn" onclick="filterRoster('LATAM', this)">LATAM</button>
       <button class="filter-btn" onclick="filterRoster('APAC', this)">APAC</button>
       <button class="filter-btn" onclick="filterRoster('Africa', this)">Africa</button>
       <button class="filter-btn" onclick="filterRoster('North America', this)">USA / N. America</button>
       <button class="filter-btn" onclick="filterRoster('Europe', this)">Europe</button>
       <button class="filter-btn" onclick="filterRoster('MENA', this)">MENA</button>
-      <button class="filter-btn" onclick="filterRoster('RoW', this)">Rest of World</button>
     </div>
 
     <details style="margin-bottom:14px;">
@@ -1321,14 +1318,23 @@ function switchTab(id) {
 
 // ─────────────────────────── ROSTER TABLE ───────────────────────────
 
-let rosterFilter = 'all';
-let rosterScope = 'committed';   // 'committed' | 'all' (adds watchlist)
+let rosterFilter = 'active';     // default view
 let rosterYear = '2026';         // '2026' | '2027'
+const ROSTER_REGIONS = ['LATAM','APAC','Africa','North America','Europe','MENA','RoW'];
 
+// One roster: committed events + sales-led watchlist, always together.
 function eventUniverse() {
-  const committed = EVENTS.map(e => ({ ...e, committed: true }));
-  if (rosterScope !== 'all') return committed;
-  return committed.concat(LATAM_CALENDAR.map(m => ({ ...m, committed: false })));
+  return EVENTS.map(e => ({ ...e, committed: true }))
+    .concat(LATAM_CALENDAR.map(m => ({ ...m, committed: false })));
+}
+
+// Bucket an event into a status filter. Watchlist / status-less events → consideration.
+function rosterBucket(e) {
+  const s = statusForYear(e);
+  if (s === 'completed') return 'completed';
+  if (s === 'closed') return 'closed';
+  if (s === 'confirmed' || s === 'planning') return 'active';
+  return 'consideration';
 }
 
 // Chronological sort key from a date string ("Aug 11–13, 2026", "Nov 2026", "TBA", ...)
@@ -1576,9 +1582,9 @@ function buildRosterTable(filter = rosterFilter) {
   rosterFilter = filter;
   const yr = rosterYear;
   let rows = eventUniverse();
-  if (filter === 'completed') rows = rows.filter(e => statusForYear(e) === 'completed');
-  else if (filter === 'active') rows = rows.filter(e => ['confirmed', 'planning'].includes(statusForYear(e)));
-  else if (['LATAM','APAC','Africa','North America','Europe','MENA','RoW'].includes(filter)) rows = rows.filter(e => e.region === filter);
+  if (['active', 'consideration', 'completed'].includes(filter)) rows = rows.filter(e => rosterBucket(e) === filter);
+  else if (ROSTER_REGIONS.includes(filter)) rows = rows.filter(e => e.region === filter && rosterBucket(e) !== 'closed');
+  // 'all' → everything, including closed (didn't-attend) events
   // 2026 view hides pure-2027 events (no 2026 date); 2027 view shows the full recurring roster
   if (yr === '2026') rows = rows.filter(e => e.date && e.date !== '—');
   const dateOf = e => yr === '2027' ? e.date2027 : e.date;
@@ -1602,11 +1608,11 @@ function buildRosterTable(filter = rosterFilter) {
         isStar = s === 'confirmed';
       }
     } else {
-      statusCell = e.committed ? statusBadge(e.status)
-        : `<span class="badge-status badge-tbc" style="font-weight:600;">${e.calStatus || 'Market'}</span>`;
+      statusCell = e.committed ? statusBadge(e.status) : statusBadge('consideration');
       isStar = e.committed && ['confirmed', 'completed'].includes(e.status);
     }
     const star = isStar ? '<span title="Committed — confirmed / attended" style="color:var(--indigo);font-weight:800;">⭐</span> ' : '';
+    const salesTag = !e.committed ? ' <span title="Sales-led watchlist event" style="background:#f1f5f9;color:#475569;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:middle;white-space:nowrap;">SALES-LED</span>' : '';
     const sub = e.city ? `<div style="font-size:11px;color:var(--text-muted);">${e.city}${e.category ? ' · ' + e.category : ''}</div>` : '';
     const budget = yr === '2027' ? '<span style="color:var(--text-muted);">—</span>'
       : (e.committed ? fmt(e.budget_actual || e.budget_proposed) : '<span style="color:var(--text-muted);">—</span>');
@@ -1622,7 +1628,7 @@ function buildRosterTable(filter = rosterFilter) {
     const estCpl = (yr !== '2027' && budgetNum && tgtLeads) ? '$' + Math.round(budgetNum / tgtLeads).toLocaleString() : '<span style="color:var(--text-muted);">—</span>';
     return qHeader + `<tr class="roster-main" onclick="openEventDrawer(${i})" style="cursor:pointer;">
       <td style="text-align:center;color:var(--text-muted);font-size:13px;">›</td>
-      <td>${star}<strong>${e.name}</strong>${sub}</td>
+      <td>${star}<strong>${e.name}</strong>${salesTag}${sub}</td>
       <td style="font-size:12px;white-space:nowrap;">${e.region}</td>
       <td style="white-space:nowrap;font-size:12px;">${primaryDate}${otherHtml}</td>
       <td>${tierPill(e.priorityTier)}</td>
@@ -1674,9 +1680,8 @@ function buildRosterFilterCounts() {
   let u = eventUniverse();
   if (rosterYear === '2026') u = u.filter(e => e.date && e.date !== '—');   // match the year-filtered table
   const countFor = f => f === 'all' ? u.length
-    : f === 'completed' ? u.filter(e => statusForYear(e) === 'completed').length
-    : f === 'active' ? u.filter(e => ['confirmed', 'planning'].includes(statusForYear(e))).length
-    : u.filter(e => e.region === f).length;
+    : ['active', 'consideration', 'completed'].includes(f) ? u.filter(e => rosterBucket(e) === f).length
+    : u.filter(e => e.region === f && rosterBucket(e) !== 'closed').length;
   document.querySelectorAll('#roster-filters .filter-btn').forEach(b => {
     const m = (b.getAttribute('onclick') || '').match(/filterRoster\('([^']+)'/);
     if (!m) return;
@@ -1689,14 +1694,6 @@ function filterRoster(filter, btn) {
   document.querySelectorAll('#roster-filters .filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   buildRosterTable(filter);
-}
-
-function setRosterScope(scope, btn) {
-  rosterScope = scope;
-  btn.parentNode.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  buildRosterFilterCounts();
-  buildRosterTable(rosterFilter);
 }
 
 // ─────────────────────────── REGIONAL CALENDARS ───────────────────────────
