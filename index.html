@@ -259,6 +259,16 @@
       font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer;
     }
     .eval-banner button:hover { background: #fffbeb; }
+    .past-banner {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: var(--indigo-50); color: var(--indigo-dark); border: 1px solid var(--indigo-200); border-radius: 10px;
+      padding: 10px 14px; font-size: 12.5px; font-weight: 700; margin: 12px 0 4px;
+    }
+    .past-banner button {
+      margin-left: auto; border: none; background: var(--indigo); color: #fff;
+      font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    }
+    .past-banner button:hover { background: #0b5d54; }
     .ef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 8px; }
     .ef { display: flex; flex-direction: column; gap: 4px; }
     .ef.ef-wide { grid-column: 1 / -1; }
@@ -555,7 +565,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 25</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 26</div>
   </div>
 </div>
 
@@ -1416,9 +1426,12 @@ function openEventDrawer(i) {
   const evalBanner = e.needsEval
     ? `<div class="eval-banner">🆕 New — awaiting evaluation${e.createdBy ? ' · added by ' + e.createdBy : ''}<button onclick="markReviewed('${e._id}')">Mark reviewed</button></div>`
     : '';
+  const pastBanner = (e.committed && ['confirmed', 'planning'].includes(e.status) && isPastEvent(e))
+    ? `<div class="past-banner">🗓 This event's date has passed — mark it completed?<button onclick="markCompleted('${e._id}')">Mark completed</button></div>`
+    : '';
   const addedBy = e.createdBy ? (e.createdBy + (e.createdAt ? ' · ' + new Date(e.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '')) : null;
 
-  const body = evalBanner +
+  const body = pastBanner + evalBanner +
     drawerSection('Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
     drawerSection('Commitment',
       drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
@@ -1565,6 +1578,26 @@ async function saveEvent(i) {
   buildBudgetTables(); buildMortemCards();
   // re-open the saved event in view mode (find it by name in the fresh rows)
   const idx = (window.__rosterRows || []).findIndex(x => x.name === name);
+  if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
+}
+
+// True if the event's (2026) start date is before today
+function isPastEvent(e) {
+  const dt = eventStartDate(e.date);
+  if (!dt) return false;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return dt < today;
+}
+async function markCompleted(id) {
+  const e = (window.__rosterRows || []).find(x => x._id === id);
+  if (!e) return;
+  const obj = { ...e }; delete obj._id; obj.status = 'completed';
+  const { error } = await sb.from('events').update({ status: 'completed', data: obj }).eq('id', id);
+  if (error) { alert('Could not mark completed: ' + error.message); return; }
+  await loadEventsFromDB();
+  buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); buildUpNext();
+  buildBudgetTables(); buildMortemCards();
+  const idx = (window.__rosterRows || []).findIndex(x => x._id === id);
   if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
 }
 
