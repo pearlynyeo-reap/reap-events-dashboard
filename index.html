@@ -565,7 +565,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 26</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 27</div>
   </div>
 </div>
 
@@ -1539,9 +1539,13 @@ async function saveEvent(i) {
   const num = id => { const v = g(id); return v === '' ? null : Number(v); };
   const name = g('name');
   if (!name) { st.textContent = 'Event name is required.'; return; }
-  const missing = [['date', 'Date'], ['city', 'City'], ['businessLine', 'Business line']].filter(([id]) => !g(id)).map(([, l]) => l);
-  if (missing.length) { st.textContent = 'Required: ' + missing.join(', ') + '.'; return; }
-  if (!g('notes')) { st.textContent = 'Please add a short “Why should we attend” — it’s required for evaluation.'; return; }
+  // Required fields enforced only when ADDING a new event — existing events (which may
+  // predate these fields) can always be edited/saved without backfilling everything.
+  if (isNew) {
+    const missing = [['date', 'Date'], ['city', 'City'], ['businessLine', 'Business line'], ['notes', 'Why should we attend']]
+      .filter(([id]) => !g(id)).map(([, l]) => l);
+    if (missing.length) { st.textContent = 'Required: ' + missing.join(', ') + '.'; return; }
+  }
   const rowId = base._id;
   // build the event object (drop internal _id)
   const obj = { ...base };
