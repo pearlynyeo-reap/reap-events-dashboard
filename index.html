@@ -191,6 +191,8 @@
     .region-name { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
     .region-count { font-size: 28px; font-weight: 800; color: var(--indigo); margin: 4px 0; }
     .region-sub { font-size: 11px; color: var(--text-muted); }
+    .region-link { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--indigo); text-decoration: none; }
+    .region-link:hover { text-decoration: underline; }
     /* ── TABLE ── */
     .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -565,7 +567,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 27</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 28</div>
   </div>
 </div>
 
@@ -1748,11 +1750,15 @@ function buildRegionCards() {
     const by = {};
     es.forEach(e => by[e.status] = (by[e.status] || 0) + 1);
     const sub = labels.filter(([k]) => by[k]).map(([k, l]) => `${by[k]} ${l}`).join(' · ') || '—';
+    const link = d.key === 'LATAM'
+      ? `<a class="region-link" href="https://latam-events.vercel.app/" target="_blank" rel="noopener" title="Open the LATAM events tracker">↗ ${es.length} events · LATAM tracker</a>`
+      : '';
     return `<div class="region-card">
       <div class="region-flag">${d.flag}</div>
       <div class="region-name">${d.name}</div>
       <div class="region-count">${es.length}</div>
       <div class="region-sub">${sub}</div>
+      ${link}
     </div>`;
   }).join('');
 }
