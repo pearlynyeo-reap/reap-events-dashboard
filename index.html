@@ -593,7 +593,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 30</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 31</div>
   </div>
 </div>
 
@@ -1485,10 +1485,10 @@ function openEventDrawer(i) {
       drawerRow('Added by', addedBy)) +
     drawerSection('Economics',
       drawerRow('Budget total (USD)', budgetV) +
-      drawerRow('Expected contacts', tgt) +
-      drawerRow('Expected qualified leads', estQual != null ? Number(estQual).toLocaleString() : null) +
-      drawerRow('Expected pre-booked meetings', estMtg != null ? Number(estMtg).toLocaleString() : null) +
-      drawerRow('Est. $/contact', estCpc) +
+      drawerRow('Target leads', tgt) +
+      drawerRow('Target qualified leads', estQual != null ? Number(estQual).toLocaleString() : null) +
+      drawerRow('Target pre-booked meetings', estMtg != null ? Number(estMtg).toLocaleString() : null) +
+      drawerRow('Est. $/lead', estCpc) +
       drawerRow('Est. $/qualified lead', estCpl) +
       drawerRow('Est. $/meeting', estCpm)) +
     drawerSection('Who is in the room',
@@ -1565,9 +1565,9 @@ function openEventEditor(i) {
       ${fld('Business line', 'businessLine', e.businessLine, 'text', 'Which Reap product this serves — e.g. Cards API, Business Account.', true)}
       ${fld('Investment / what we do', 'investment', e.investment, 'text', 'Planned play — e.g. “Booth + speaking”, “Attend only”.')}
       ${fld('Budget total (USD)', 'budget_proposed', e.budget_proposed, 'number', 'Estimated total cost, numbers only.')}
-      ${fld('Expected contacts', 'leads_target', e.leads_target, 'number', 'Total contacts — badge scans, sign-ups, Luma/Blinq lists.')}
-      ${fld('Expected qualified leads', 'opps_target', e.opps_target, 'number', 'Sales-qualified leads. Optional — estimated from history if blank.')}
-      ${fld('Expected pre-booked meetings', 'meetings_target', e.meetings_target, 'number', '1:1s booked before / at the event.')}
+      ${fld('Target leads', 'leads_target', e.leads_target, 'number', 'Top-of-funnel target — registrations, scans, sign-ups. Shows as “Target Leads” in the roster.')}
+      ${fld('Target qualified leads', 'opps_target', e.opps_target, 'number', 'The sales-qualified subset. Optional — estimated from history if blank.')}
+      ${fld('Target pre-booked meetings', 'meetings_target', e.meetings_target, 'number', '1:1s booked before / at the event.')}
       <div class="calc-box" id="ef-calc"></div>
       ${isNew ? '' : `<div class="ef-section">Results · after the event <em>— fill these in once it's done; they feed the benchmarks</em></div>
       ${fld('Actual spend (USD)', 'budget_actual', e.budget_actual, 'number', 'Reconciled total cost.')}
@@ -1768,7 +1768,7 @@ function updateCalc() {
   if (!qual && contacts && b.conv) { qual = Math.round(contacts * b.conv); estQ = true; }
   const cell = (label, v, list, what, note) => `<div class="calc-cell"><div class="calc-k">${label}</div><div class="calc-v">${money(v)}</div>${v == null ? '<div class="cv cv-none">Add an expected count to calculate</div>' : (list.length ? verdictHtml(v, list) : noHistory(what))}${note || ''}</div>`;
   box.innerHTML = `<div class="calc-title">Cost calculator</div><div class="calc-grid">
-    ${cell('Cost per contact', contacts ? budget / contacts : null, b.cpcList, 'contact')}
+    ${cell('Cost per lead', contacts ? budget / contacts : null, b.cpcList, 'lead')}
     ${cell('Cost per qualified lead' + (estQ ? ' (est.)' : ''), qual ? budget / qual : null, b.cplList, 'qualified-lead',
       estQ ? `<div class="calc-note">Assumes ~${qual.toLocaleString()} qualified leads at our historical ${Math.round(b.conv * 100)}% contact→lead conversion.</div>` : '')}
     ${cell('Cost per pre-booked meeting', meetings ? budget / meetings : null, b.cpmList, 'meeting')}
