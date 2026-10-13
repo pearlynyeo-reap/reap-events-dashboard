@@ -593,7 +593,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 31</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 32</div>
   </div>
 </div>
 
@@ -918,7 +918,6 @@
               <th>Region</th>
               <th>Contacts</th>
               <th>Qualified Leads</th>
-              <th>Meetings</th>
               <th>Cost/Contact</th>
               <th>Cost/Qual. Lead</th>
               <th>48hr Follow-ups</th>
@@ -930,7 +929,7 @@
           <tbody id="mortem-table-body"></tbody>
         </table>
       </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Contacts = total marketing contacts (mktg + sales) · Qualified Leads = sales-qualified leads · Meetings = pre-booked meetings held · Cost/Contact &amp; Cost/Qual. Lead = reconciled budget ÷ contacts / qualified leads · “tgt” = target (actual not yet in). Source: manual lead tracker.</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Contacts = total marketing contacts (mktg + sales) · Qualified Leads = sales-qualified leads · Cost/Contact &amp; Cost/Qual. Lead = reconciled budget ÷ contacts / qualified leads · “tgt” = target (actual not yet in). Source: manual lead tracker.</div>
     </div>
 
     <div id="mortem-cards"></div>
@@ -2488,7 +2487,6 @@ function buildMortemCards() {
       <td>${e.region}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${contacts}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${qualLeads}</td>
-      <td style="text-align:center;font-size:12px;">${e.meetings_actual != null ? e.meetings_actual.toLocaleString() : (e.meetings_target != null ? `<span style="color:var(--text-muted);">${e.meetings_target}<span style="font-size:9px;"> tgt</span></span>` : '—')}</td>
       <td style="text-align:center;font-size:12px;">${cpc}</td>
       <td style="text-align:center;font-size:12px;">${cpl}</td>
       <td style="text-align:center;">${checkIcon(followUp)}</td>
