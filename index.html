@@ -303,6 +303,7 @@
     .bm-k { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
     .bm-v { font-size: 24px; font-weight: 800; color: var(--indigo-dark); margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
     .bm-sub { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
+    .hs-tag { display: inline-block; font-size: 9.5px; font-weight: 800; letter-spacing: .03em; color: #c2410c; background: #fff1e8; border: 1px solid #fed7aa; border-radius: 6px; padding: 0 5px; vertical-align: middle; }
     @media (max-width: 560px) { .calc-grid { grid-template-columns: 1fr; } }
     .ef input, .ef select, .ef textarea {
       width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px; font-family: inherit;
@@ -593,7 +594,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 33</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 34</div>
   </div>
 </div>
 
@@ -1505,12 +1506,23 @@ function openEventDrawer(i) {
     drawerSection('Results · after the event',
       drawerRow('Actual spend (USD)', pend(actSpend)) +
       drawerRow('Contacts', pend(actContacts)) +
-      drawerRow('Qualified leads', pend(actLeads)) +
+      drawerRow('Qualified leads', pend(actLeads) + (e.opps_source === 'hubspot' ? ' <span class="hs-tag" title="From HubSpot Leads board: SQL + SAO">HubSpot</span>' : '')) +
       drawerRow('Pre-booked meetings', pend(actMtg)) +
       drawerRow('Actual $/contact', pend(actCpc)) +
       drawerRow('Actual $/qualified lead', pend(actCpl)) +
       drawerRow('Actual $/meeting', pend(actCpm)) +
-      drawerRow('Pipeline (USD)', pend(pipe)));
+      drawerRow('Pipeline (USD)', pend(pipe))) +
+    (e.hubspotTag ? drawerSection('HubSpot pipeline',
+      drawerRow('Lead tag', `<code style="font-size:12px;">… - ${e.hubspotTag}</code>`) +
+      (e.hs_synced_at ? (
+        drawerRow('Leads in HubSpot', Number(e.hs_leads_total || 0).toLocaleString()) +
+        drawerRow('MQL', Number(e.hs_mql || 0).toLocaleString()) +
+        drawerRow('SQL – Engaging', Number(e.hs_sql || 0).toLocaleString()) +
+        drawerRow('SAO – opportunity created', Number(e.hs_sao || 0).toLocaleString()) +
+        drawerRow('Disqualified', Number(e.hs_dq || 0).toLocaleString()) +
+        drawerRow('Last synced', new Date(e.hs_synced_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) +
+        (e.opps_actual_manual != null && e.opps_actual_manual !== e.opps_actual ? drawerRow('Manual count (before sync)', Number(e.opps_actual_manual).toLocaleString()) : '')
+      ) : drawerRow('Status', '<span style="color:var(--text-muted);">Not synced yet</span>'))) : '');
 
   __drawerIndex = i;
   document.getElementById('drawer-edit-btn').hidden = false;
@@ -1574,7 +1586,7 @@ function openEventEditor(i) {
       ${isNew ? '' : `<div class="ef-section">Results · after the event <em>— fill these in once it's done; they feed the benchmarks</em></div>
       ${fld('Actual spend (USD)', 'budget_actual', e.budget_actual, 'number', 'Reconciled total cost.')}
       ${fld('Actual contacts', 'leads_actual', e.leads_actual, 'number', 'Total contacts captured.')}
-      ${fld('Actual qualified leads', 'opps_actual', e.opps_actual, 'number', 'Sales-qualified leads.')}
+      ${fld('Actual qualified leads', 'opps_actual', e.opps_actual, 'number', e.hubspotTag ? 'Synced from HubSpot (SQL + SAO) — manual edits are replaced on the next sync.' : 'Sales-qualified leads.')}
       ${fld('Actual pre-booked meetings', 'meetings_actual', e.meetings_actual, 'number', 'Meetings actually held.')}`}
       ${fld('Industries', 'industries', e.industries, 'text', 'Audience sectors — e.g. “Fintech · Payments · Banks”.')}
       ${fld('Audience / ICP', 'icp', e.icp, 'text', 'Who we want to meet (ideal customer profile).')}
@@ -1582,6 +1594,7 @@ function openEventEditor(i) {
       ${fld('Lead capture', 'leadCapture', e.leadCapture, 'text', 'How leads get captured — Blinq, Luma, booth scans…')}
       ${fld('KPI goal', 'kpiGoal', e.kpiGoal, 'text', 'One-line success target — e.g. “140 leads→drip; 20 mtgs”.')}
       ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink, 'text', 'Link to the event’s agenda / schedule.')}
+      ${fld('HubSpot lead tag', 'hubspotTag', e.hubspotTag, 'text', 'Suffix on HubSpot lead names, e.g. “TOKEN2049 SG 2026” — leads named “Name - TOKEN2049 SG 2026” sync to this event.')}
       ${area('Why should we attend / notes', 'notes', e.notes, 'The rationale — this is what gets evaluated. Why is this worth our time?', true)}
     </div>
     <div class="ef-actions">
@@ -1626,6 +1639,7 @@ async function saveEvent(i) {
     industries: g('industries') || null, icp: g('icp') || null,
     staffing: g('staffing') || null, leadCapture: g('leadCapture') || null,
     kpiGoal: g('kpiGoal') || null, eventCalendarLink: g('eventCalendarLink') || null,
+    hubspotTag: g('hubspotTag') || null,
     notes: g('notes') || null,
   });
   // Results fields only exist when editing an existing event
@@ -2454,7 +2468,7 @@ function buildMortemCards() {
     const mortemDone = done;
     const contacts = e.leads_actual != null ? e.leads_actual.toLocaleString()
       : (e.leads_target != null ? `<span style="color:var(--text-muted);">${e.leads_target}<span style="font-size:9px;"> tgt</span></span>` : '—');
-    const qualLeads = e.opps_actual != null ? e.opps_actual.toLocaleString()
+    const qualLeads = e.opps_actual != null ? e.opps_actual.toLocaleString() + (e.opps_source === 'hubspot' ? ' <span class="hs-tag" title="From HubSpot Leads board: SQL + SAO">HS</span>' : '')
       : (e.opps_target != null ? `<span style="color:var(--text-muted);">${e.opps_target}<span style="font-size:9px;"> tgt</span></span>` : '—');
     const cost = e.budget_actual != null ? e.budget_actual : e.budget_proposed;
     const cpc = (cost && e.leads_actual) ? `$${Math.round(cost / e.leads_actual).toLocaleString()}` : '—';
