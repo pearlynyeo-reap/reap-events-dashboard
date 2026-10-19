@@ -594,7 +594,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 37</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 38</div>
   </div>
 </div>
 
@@ -909,7 +909,14 @@
 
     <!-- Completed events close-out (above the post-mortems) -->
     <div class="card">
-      <div class="card-title">All Completed Events — Close-Out Status</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div class="card-title" style="margin:0;">All Completed Events — Close-Out Status</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span id="hs-sync-status" style="font-size:11.5px;color:var(--text-muted);"></span>
+          <button id="hs-sync-btn" class="drawer-edit" style="padding:7px 14px;font-size:12.5px;" onclick="refreshHubspotLeads()">↻ Refresh HubSpot leads</button>
+        </div>
+      </div>
+      <div id="hs-sync-result" style="font-size:12px;margin:8px 0 2px;"></div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -919,6 +926,7 @@
               <th>Region</th>
               <th>Contacts</th>
               <th>Qualified Leads</th>
+              <th title="HubSpot Leads board, matched by lead-name tag">HubSpot funnel<br><span style="font-weight:500;text-transform:none;letter-spacing:0;">MQL → SQL → SAO</span></th>
               <th>Cost/Contact</th>
               <th>Cost/Qual. Lead</th>
               <th>48hr Follow-ups</th>
@@ -1697,6 +1705,42 @@ async function markCompleted(id) {
   if (idx >= 0) openEventDrawer(idx); else closeEventDrawer();
 }
 
+// ── HubSpot Leads funnel (close-out table) + refresh button ──
+function hsFunnelCell(e) {
+  if (!e.hubspotTag) return '<span style="color:var(--text-muted);" title="No HubSpot lead tag set — add one via Edit">—</span>';
+  if (!e.hs_synced_at) return '<span style="color:var(--text-muted);">not synced</span>';
+  const n = v => Number(v || 0);
+  return `<span title="Tag: … - ${e.hubspotTag} · Disqualified: ${n(e.hs_dq)} · New: ${n(e.hs_new)}">${n(e.hs_mql)} → ${n(e.hs_sql)} → <b style="color:var(--indigo-dark);">${n(e.hs_sao)} SAO</b></span>`;
+}
+function updateHsSyncStatus() {
+  const el = document.getElementById('hs-sync-status');
+  if (!el) return;
+  const t = EVENTS.map(e => e.hs_synced_at).filter(Boolean).sort().pop();
+  el.textContent = t ? 'Last synced ' + new Date(t).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not synced yet';
+}
+async function refreshHubspotLeads() {
+  const btn = document.getElementById('hs-sync-btn'), out = document.getElementById('hs-sync-result');
+  btn.disabled = true; btn.textContent = '↻ Syncing…'; out.innerHTML = '';
+  try {
+    const { data, error } = await sb.functions.invoke('sync-hubspot-leads', { body: {} });
+    if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
+    await loadEventsFromDB();
+    buildRegionCards(); buildRosterFilterCounts(); buildRosterTable(); buildUpNext(); buildBudgetTables(); buildMortemCards();
+    const ev = (data.events || []).map(x => `${x.name}: ${x.qualified} qualified (${x.sao} SAO)`).join(' · ');
+    const un = data.unmatchedTags || [];
+    out.innerHTML = `<span style="color:#166534;font-weight:700;">✓ Synced ${(data.events || []).length} event(s) from ${data.leadsScanned} HubSpot leads.</span> ${ev}` +
+      (un.length ? `<div style="color:#92400e;margin-top:4px;">⚠ HubSpot leads tagged with no matching event: ${un.map(u => `“${u.tag}” (${u.count})`).join(', ')} — set it as that event's HubSpot lead tag (Edit) to include them.</div>` : '');
+  } catch (e) {
+    const msg = String((e && e.message) || e);
+    out.innerHTML = /Failed to send|not found|404|FunctionsFetchError|FunctionsRelayError|FunctionsHttpError/i.test(msg)
+      ? '<span style="color:#991b1b;">HubSpot sync isn’t switched on yet — the <code>sync-hubspot-leads</code> function needs a one-time deploy in Supabase.</span>'
+      : `<span style="color:#991b1b;">Sync failed: ${msg}</span>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '↻ Refresh HubSpot leads';
+  }
+}
+
 async function markReviewed(id) {
   const e = (window.__rosterRows || []).find(x => x._id === id);
   if (!e) return;
@@ -2198,6 +2242,7 @@ function buildMortemCards() {
   const container = document.getElementById('mortem-cards');
   container.innerHTML = '';   // "Pending Verification" urgency cards removed — close-out status lives in the table below
   buildBenchmarks();
+  updateHsSyncStatus();
 
   // Completed post-mortems section — insert after the (now-empty) placeholder
   // Idempotent: remove the section from a previous render before re-inserting (was duplicating on every save)
@@ -2512,6 +2557,7 @@ function buildMortemCards() {
       <td>${e.region}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${contacts}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${qualLeads}</td>
+      <td style="text-align:center;font-size:12px;white-space:nowrap;">${hsFunnelCell(e)}</td>
       <td style="text-align:center;font-size:12px;">${cpc}</td>
       <td style="text-align:center;font-size:12px;">${cpl}</td>
       <td style="text-align:center;">${checkIcon(followUp)}</td>
