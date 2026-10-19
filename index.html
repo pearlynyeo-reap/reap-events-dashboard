@@ -593,7 +593,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 32</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 33</div>
   </div>
 </div>
 
@@ -1375,6 +1375,9 @@ let rosterFilter = 'active';     // default view
 let rosterYear = '2026';         // '2026' | '2027'
 const ROSTER_REGIONS = ['LATAM','APAC','Africa','North America','Europe','MENA','RoW'];
 
+// Overview stats are 2026-only: 2027-only events (no 2026 date) live in the roster's 2027 view.
+function events2026() { return EVENTS.filter(e => e.date && e.date !== '—'); }
+
 // One roster: committed events + sales-led watchlist, always together.
 function eventUniverse() {
   return EVENTS.map(e => ({ ...e, committed: true }))
@@ -1805,7 +1808,8 @@ function buildRosterTable(filter = rosterFilter) {
   // 2026 view hides pure-2027 events (no 2026 date), but always keeps events flagged for evaluation
   if (yr === '2026') rows = rows.filter(e => (e.date && e.date !== '—') || e.needsEval);
   const dateOf = e => yr === '2027' ? e.date2027 : e.date;
-  rows = rows.slice().sort((a, b) => dateSortKey(dateOf(a)) - dateSortKey(dateOf(b)) || a.name.localeCompare(b.name));
+  const sortKeyOf = e => { const d = dateOf(e) || ''; return dateSortKey(!/20\d{2}/.test(d) && quarterOf(d) ? d + ' ' + yr : d); };
+  rows = rows.slice().sort((a, b) => sortKeyOf(a) - sortKeyOf(b) || a.name.localeCompare(b.name));
 
   window.__rosterRows = rows;
   let prevQ = 'INIT';
@@ -1880,7 +1884,7 @@ function buildRegionCards() {
   ];
   const labels = [['completed', 'completed'], ['confirmed', 'confirmed'], ['planning', 'planning'], ['consideration', 'consideration'], ['tbc', 'TBC'], ['closed', 'closed']];
   document.getElementById('region-grid').innerHTML = defs.map(d => {
-    const es = EVENTS.filter(e => e.region === d.key);
+    const es = events2026().filter(e => e.region === d.key);
     const by = {};
     es.forEach(e => by[e.status] = (by[e.status] || 0) + 1);
     const sub = labels.filter(([k]) => by[k]).map(([k, l]) => `${by[k]} ${l}`).join(' · ') || '—';
@@ -2581,7 +2585,7 @@ function buildTimeline() {
   const strip = document.getElementById('timeline-strip');
   const ALL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   let html = quarters.map(q => {
-    const qEvents = EVENTS.filter(e => q.months.some(m => e.date.includes(m)));
+    const qEvents = events2026().filter(e => q.months.some(m => e.date.includes(m)));
     return `<div class="timeline-quarter">
       <div class="tq-header ${q.cls}">${q.label}</div>
       <div class="tq-events">
@@ -2591,7 +2595,7 @@ function buildTimeline() {
     </div>`;
   }).join('');
   // Events with no parseable month (e.g. "2026 (TBC)") — surface them rather than dropping
-  const undated = EVENTS.filter(e => !ALL_MONTHS.some(m => (e.date || '').includes(m)));
+  const undated = events2026().filter(e => !ALL_MONTHS.some(m => (e.date || '').includes(m)));
   if (undated.length) {
     html += `<div class="timeline-quarter">
       <div class="tq-header" style="background:#64748b;color:#fff;">Date TBC</div>
@@ -2656,7 +2660,7 @@ function buildChartsFor(tab) {
 
 function buildChartStatus() {
   const counts = { completed: 0, confirmed: 0, planning: 0, consideration: 0, tbc: 0 };
-  EVENTS.forEach(e => counts[e.status]++);
+  events2026().forEach(e => { if (e.status in counts) counts[e.status]++; });
   mkChart('chartStatus', {
     type: 'doughnut',
     data: {
@@ -2829,12 +2833,12 @@ function buildChartHSPipeline() {
 
 function init() {
   // Merge regional framework fields onto committed events (Regional Calendars view)
-  EVENTS.forEach(e => { if (EVENT_META[e.name]) Object.assign(e, EVENT_META[e.name]); });
-  const total = EVENTS.length;
+  applyEventMetaFallback();
+  const total = events2026().length;
   const put = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   put('kpi-total-events', total);
   put('hdr-event-count', total);
-  const regionCount = new Set(EVENTS.map(e => e.region)).size;
+  const regionCount = new Set(events2026().map(e => e.region)).size;
   put('hdr-region-count', regionCount);
   put('kpi-region-count', regionCount);
   put('badge-status-total', total + ' Total');
@@ -2862,6 +2866,15 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
 let CURRENT_USER = null;
 let __booted = false;
 
+// EVENT_META (hard-coded framework fields) only fills gaps — the database always wins, so edits
+// made in the form (tier, city, 2027 date…) are never overwritten on reload.
+function applyEventMetaFallback() {
+  EVENTS.forEach(e => {
+    const m = EVENT_META[e.name];
+    if (m) Object.entries(m).forEach(([k, v]) => { if (e[k] == null || e[k] === '') e[k] = v; });
+  });
+}
+
 async function loadEventsFromDB() {
   const q = sb.from('events').select('id, source, data, updated_at').order('name');
   const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timed out after 10s')), 10000));
@@ -2871,6 +2884,7 @@ async function loadEventsFromDB() {
   console.log('[dashboard] loaded rows:', rows.length);
   EVENTS = rows.filter(r => (r.source || 'reap') !== 'watchlist').map(r => ({ ...r.data, _id: r.id }));
   LATAM_CALENDAR = rows.filter(r => (r.source || 'reap') === 'watchlist').map(r => ({ ...r.data, _id: r.id }));
+  applyEventMetaFallback();
   // "Last updated" = most recent edit to any event
   const times = rows.map(r => r.updated_at).filter(Boolean).sort();
   const el = document.getElementById('hdr-updated');
