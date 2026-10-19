@@ -594,7 +594,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 36</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 37</div>
   </div>
 </div>
 
@@ -1569,33 +1569,39 @@ function openEventEditor(i) {
   document.getElementById('drawer-body').innerHTML =
     `<div class="ef-legend"><em class="ef-req">*</em> required field</div>
     <div class="ef-grid">
+      <div class="ef-section" style="margin-top:0;padding-top:0;border-top:none;">Event</div>
       ${fld('Event name', 'name', e.name, 'text', 'The event\'s official name.', true)}
       ${sel('Region', 'region', e.region || 'LATAM', REGION_OPTS, 'Primary region — drives grouping & filters.', true)}
+      ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”.', true)}
+      ${fld('City', 'city', e.city, 'text', 'City, Country — e.g. “Bogotá, CO”.', true)}
+      <div class="ef-section">Why should we attend</div>
+      ${area('Why should we attend / notes', 'notes', e.notes, 'The rationale — this is what gets evaluated. Why is this worth our time?', true)}
+      <div class="ef-section">Commitment</div>
       ${sel('Type', 'source', e.source || 'reap', SOURCE_OPTS, 'Reap event = we may attend/commit (counts in budget & KPIs). Sales-led = monitoring only; shows under Consideration with a SALES-LED tag.')}
       ${sel('Status', 'status', e.status || 'consideration', STATUS_OPTS, 'Pipeline stage. New events default to Consideration.')}
       ${sel('Priority', 'priorityTier', e.priorityTier || 'Tier 2', TIER_OPTS, 'Tier 1 Flagship · Tier 2 Strategic · Tier 3 Monitor.')}
-      ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”.', true)}
-      ${fld('City', 'city', e.city, 'text', 'City, Country — e.g. “Bogotá, CO”.', true)}
       ${fld('Business line', 'businessLine', e.businessLine, 'text', 'Which Reap product this serves — e.g. Cards API, Business Account.', true)}
-      ${fld('Investment / what we do', 'investment', e.investment, 'text', 'Planned play — e.g. “Booth + speaking”, “Attend only”.')}
+      <div class="ef-section">Economics</div>
       ${fld('Budget total (USD)', 'budget_proposed', e.budget_proposed, 'number', 'Estimated total cost, numbers only.')}
       ${fld('Target leads', 'leads_target', e.leads_target, 'number', 'Top-of-funnel target — registrations, scans, sign-ups. Shows as “Target Leads” in the roster.')}
       ${fld('Target qualified leads', 'opps_target', e.opps_target, 'number', 'The sales-qualified subset. Optional — estimated from history if blank.')}
       ${fld('Target pre-booked meetings', 'meetings_target', e.meetings_target, 'number', '1:1s booked before / at the event.')}
       <div class="calc-box" id="ef-calc"></div>
+      <div class="ef-section">Who is in the room</div>
+      ${fld('Industries', 'industries', e.industries, 'text', 'Audience sectors — e.g. “Fintech · Payments · Banks”.')}
+      ${fld('Audience / ICP', 'icp', e.icp, 'text', 'Who we want to meet (ideal customer profile).')}
+      ${fld('Staffing', 'staffing', e.staffing || e.presence, 'text', 'Who’d attend / from which team.')}
+      <div class="ef-section">Execution</div>
+      ${fld('Investment / what we do', 'investment', e.investment, 'text', 'Planned play — e.g. “Booth + speaking”, “Attend only”.')}
+      ${fld('Lead capture', 'leadCapture', e.leadCapture, 'text', 'How leads get captured — Blinq, Luma, booth scans…')}
+      ${fld('KPI goal', 'kpiGoal', e.kpiGoal, 'text', 'One-line success target — e.g. “140 leads→drip; 20 mtgs”.')}
+      ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink, 'text', 'Link to the event’s agenda / schedule.')}
+      ${fld('HubSpot lead tag', 'hubspotTag', e.hubspotTag, 'text', 'Suffix on HubSpot lead names, e.g. “TOKEN2049 SG 2026” — leads named “Name - TOKEN2049 SG 2026” sync to this event.')}
       ${isNew ? '' : `<div class="ef-section">Results · after the event <em>— fill these in once it's done; they feed the benchmarks</em></div>
       ${fld('Actual spend (USD)', 'budget_actual', e.budget_actual, 'number', 'Reconciled total cost.')}
       ${fld('Actual contacts', 'leads_actual', e.leads_actual, 'number', 'Total contacts captured.')}
       ${fld('Actual qualified leads', 'opps_actual', e.opps_actual, 'number', e.hubspotTag ? 'Synced from HubSpot (SQL + SAO) — manual edits are replaced on the next sync.' : 'Sales-qualified leads.')}
       ${fld('Actual pre-booked meetings', 'meetings_actual', e.meetings_actual, 'number', 'Meetings actually held.')}`}
-      ${fld('Industries', 'industries', e.industries, 'text', 'Audience sectors — e.g. “Fintech · Payments · Banks”.')}
-      ${fld('Audience / ICP', 'icp', e.icp, 'text', 'Who we want to meet (ideal customer profile).')}
-      ${fld('Staffing', 'staffing', e.staffing || e.presence, 'text', 'Who’d attend / from which team.')}
-      ${fld('Lead capture', 'leadCapture', e.leadCapture, 'text', 'How leads get captured — Blinq, Luma, booth scans…')}
-      ${fld('KPI goal', 'kpiGoal', e.kpiGoal, 'text', 'One-line success target — e.g. “140 leads→drip; 20 mtgs”.')}
-      ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink, 'text', 'Link to the event’s agenda / schedule.')}
-      ${fld('HubSpot lead tag', 'hubspotTag', e.hubspotTag, 'text', 'Suffix on HubSpot lead names, e.g. “TOKEN2049 SG 2026” — leads named “Name - TOKEN2049 SG 2026” sync to this event.')}
-      ${area('Why should we attend / notes', 'notes', e.notes, 'The rationale — this is what gets evaluated. Why is this worth our time?', true)}
     </div>
     <div class="ef-actions">
       <button class="login-btn" style="width:auto;padding:10px 20px;margin:0;" onclick="saveEvent(${isNew ? 'null' : i})">${isNew ? 'Create event' : 'Save changes'}</button>
