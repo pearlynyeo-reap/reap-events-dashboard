@@ -195,6 +195,8 @@
     .region-link:hover { text-decoration: underline; }
     /* ── TABLE ── */
     .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+    .closeout-table th { white-space: normal; vertical-align: bottom; line-height: 1.3; }
+    .closeout-table th, .closeout-table td { padding-left: 9px; padding-right: 9px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     tr.quarter-header td {
       background: var(--indigo-50, #f0fdfa);
@@ -594,7 +596,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 38</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 39</div>
   </div>
 </div>
 
@@ -918,7 +920,7 @@
       </div>
       <div id="hs-sync-result" style="font-size:12px;margin:8px 0 2px;"></div>
       <div class="table-wrap">
-        <table>
+        <table class="closeout-table">
           <thead>
             <tr>
               <th>Event</th>
@@ -927,12 +929,11 @@
               <th>Contacts</th>
               <th>Qualified Leads</th>
               <th title="HubSpot Leads board, matched by lead-name tag">HubSpot funnel<br><span style="font-weight:500;text-transform:none;letter-spacing:0;">MQL → SQL → SAO</span></th>
-              <th>Cost/Contact</th>
-              <th>Cost/Qual. Lead</th>
+              <th>Cost / Contact</th>
+              <th>Cost / Qual. Lead</th>
               <th>48hr Follow-ups</th>
               <th>Budget Reconciled</th>
               <th>Mortem Done</th>
-              <th>Overall</th>
             </tr>
           </thead>
           <tbody id="mortem-table-body"></tbody>
@@ -2524,13 +2525,6 @@ function buildMortemCards() {
     const cost = e.budget_actual != null ? e.budget_actual : e.budget_proposed;
     const cpc = (cost && e.leads_actual) ? `$${Math.round(cost / e.leads_actual).toLocaleString()}` : '—';
     const cpl = (cost && e.opps_actual) ? `$${Math.round(cost / e.opps_actual).toLocaleString()}` : '—';
-    const overallBadge = na
-      ? '<span class="badge-status badge-completed">✓ Closed</span>'
-      : done
-        ? '<span class="badge-status badge-completed">✓ Closed</span>'
-        : isOverdue
-          ? `<span class="badge-status" style="background:#fee2e2;color:#991b1b;">🔴 ${e.overdue_days}d Since Event</span>`
-          : '<span class="badge-status badge-tbc">⏳ Pending</span>';
     // Show Notion links for events with retros
     const retroLinks = {
       'Fintech Mexico (MXFTW)': 'https://www.notion.so/reap/MXFTW-Retro-3147e193475080a29d9bfd866547824a',
@@ -2563,7 +2557,6 @@ function buildMortemCards() {
       <td style="text-align:center;">${checkIcon(followUp)}</td>
       <td style="text-align:center;">${checkIcon(budgetRec)}</td>
       <td style="text-align:center;">${mortemCell}</td>
-      <td>${overallBadge}</td>
     </tr>`;
   }).join('');
 }
