@@ -199,6 +199,7 @@
     #roster-table th, #roster-table td { padding-left: 9px; padding-right: 9px; }
     .closeout-table th { white-space: normal; vertical-align: bottom; line-height: 1.3; }
     .closeout-table th, .closeout-table td { padding-left: 9px; padding-right: 9px; }
+    .closeout-table th:nth-child(n+4) { text-align: center; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     tr.quarter-header td {
       background: var(--indigo-50, #f0fdfa);
@@ -598,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 40</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 41</div>
   </div>
 </div>
 
@@ -788,9 +789,9 @@
               <th>Status</th>
               <th>Investment</th>
               <th>Budget</th>
-              <th title="Top-of-funnel target: registrations, badge scans, sign-ups">Target Contacts</th>
-              <th title="Target (sales-qualified) leads">Target Leads</th>
-              <th title="Budget ÷ target leads">Est. $/Lead</th>
+              <th style="text-align:right;" title="Top-of-funnel target: registrations, badge scans, sign-ups">Target Contacts</th>
+              <th style="text-align:right;" title="Target (sales-qualified) leads">Target Leads</th>
+              <th style="text-align:right;" title="Budget ÷ target leads">Est. $/Lead</th>
             </tr>
           </thead>
           <tbody id="roster-body"></tbody>
