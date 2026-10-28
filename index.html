@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 41</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 42</div>
   </div>
 </div>
 
@@ -1473,6 +1473,7 @@ function openEventDrawer(i) {
   const estCpl = (bnum && estQual) ? withVerdict(bnum / estQual, bm.cplList) : null;
   const estCpm = (bnum && estMtg) ? withVerdict(bnum / estMtg, bm.cpmList) : null;
   const calLink = e.eventCalendarLink ? `<a href="${e.eventCalendarLink}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">Open calendar ↗</a>` : null;
+  const badgeLink = e.badgeMakerUrl ? `<a href="${e.badgeMakerUrl}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">🪪 Open badge maker ↗</a>` : '<span style="color:var(--text-muted);font-style:italic;">Not set — add a link via Edit</span>';
   const isDone = e.status === 'completed';
   const pend = v => v != null ? v : (isDone ? '<span style="color:var(--text-muted);">—</span>' : '<span style="color:var(--text-muted);">Pending</span>');
   const actSpend = e.budget_actual != null ? fmt(e.budget_actual) : null;
@@ -1515,14 +1516,15 @@ function openEventDrawer(i) {
       drawerRow('What we do', e.investment) +
       drawerRow('Lead capture', e.leadCapture) +
       drawerRow('KPI goal', e.kpiGoal || '<span style="color:var(--text-muted);font-style:italic;">e.g. 140 leads→drip; 20 mtgs; secure speaker slot</span>') +
-      drawerRow('Event calendar', calLink)) +
+      drawerRow('Event calendar', calLink) +
+      drawerRow('Badge maker', badgeLink)) +
     drawerSection('Results · after the event',
       drawerRow('Actual spend (USD)', pend(actSpend)) +
       drawerRow('Contacts', pend(actContacts)) +
-      drawerRow('Qualified leads', pend(actLeads) + (e.opps_source === 'hubspot' ? ' <span class="hs-tag" title="From HubSpot Leads board: SQL + SAO">HubSpot</span>' : '')) +
+      drawerRow('Leads', pend(actLeads) + (e.opps_source === 'hubspot' ? ' <span class="hs-tag" title="From HubSpot Leads board: SQL + SAO">HubSpot</span>' : '')) +
       drawerRow('Pre-booked meetings', pend(actMtg)) +
       drawerRow('Actual $/contact', pend(actCpc)) +
-      drawerRow('Actual $/qualified lead', pend(actCpl)) +
+      drawerRow('Actual $/lead', pend(actCpl)) +
       drawerRow('Actual $/meeting', pend(actCpm)) +
       drawerRow('Pipeline (USD)', pend(pipe))) +
     (e.hubspotTag ? drawerSection('HubSpot pipeline',
@@ -1609,6 +1611,7 @@ function openEventEditor(i) {
       ${fld('Lead capture', 'leadCapture', e.leadCapture, 'text', 'How leads get captured — Blinq, Luma, booth scans…')}
       ${fld('KPI goal', 'kpiGoal', e.kpiGoal, 'text', 'One-line success target — e.g. “140 leads→drip; 20 mtgs”.')}
       ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink, 'text', 'Link to the event’s agenda / schedule.')}
+      ${fld('Badge maker link', 'badgeMakerUrl', e.badgeMakerUrl, 'text', 'Link to this event’s badge maker (Claude artifact).')}
       ${fld('HubSpot lead tag', 'hubspotTag', e.hubspotTag, 'text', 'Suffix on HubSpot lead names, e.g. “TOKEN2049 SG 2026” — leads named “Name - TOKEN2049 SG 2026” sync to this event.')}
       ${isNew ? '' : `<div class="ef-section">Results · after the event <em>— fill these in once it's done; they feed the benchmarks</em></div>
       ${fld('Actual spend (USD)', 'budget_actual', e.budget_actual, 'number', 'Reconciled total cost.')}
@@ -1658,6 +1661,7 @@ async function saveEvent(i) {
     industries: g('industries') || null, icp: g('icp') || null,
     staffing: g('staffing') || null, leadCapture: g('leadCapture') || null,
     kpiGoal: g('kpiGoal') || null, eventCalendarLink: g('eventCalendarLink') || null,
+    badgeMakerUrl: g('badgeMakerUrl') || null,
     hubspotTag: g('hubspotTag') || null,
     notes: g('notes') || null,
   });
