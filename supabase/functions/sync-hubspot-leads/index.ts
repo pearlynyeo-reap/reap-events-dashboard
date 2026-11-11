@@ -2,7 +2,8 @@
 // Triggered by the "↻ Refresh HubSpot leads" button on the dashboard (Budget & Close-out tab).
 // Pulls every record from the HubSpot Leads object (0-136), matches leads to events by the
 // lead-name suffix stored as each event's `hubspotTag` ("Jane Doe - TOKEN2049 SG 2026"),
-// and writes the stage funnel back onto the event. Qualified leads = SQL + SAO.
+// and writes the stage funnel back onto the event. The post-event lead count (opps_actual)
+// is the ROI baseline and is left untouched.
 //
 // Secrets: HUBSPOT_TOKEN — a HubSpot private-app token with the `crm.objects.leads.read` scope.
 // SUPABASE_URL / SUPABASE_ANON_KEY are provided by Supabase automatically. The caller's own
@@ -69,15 +70,13 @@ Deno.serve(async (req) => {
       }
       const d = ev.data;
       const qualified = c.sql + c.sao;
+      // opps_actual is the post-event lead count (the fixed ROI baseline) — never overwrite it.
+      // The sync only records where those leads are now.
       const data = {
         ...d,
         hs_leads_total: c.new + c.mql + c.sql + c.sao + c.dq,
         hs_new: c.new, hs_mql: c.mql, hs_sql: c.sql, hs_sao: c.sao, hs_dq: c.dq,
         hs_synced_at: now,
-        // keep the pre-HubSpot manual count for audit the first time an event switches over
-        opps_actual_manual: d.opps_source === "hubspot" ? (d.opps_actual_manual ?? null) : (d.opps_actual ?? null),
-        opps_actual: qualified,
-        opps_source: "hubspot",
       };
       const { error: ue } = await sb.from("events").update({ data }).eq("id", ev.id);
       if (ue) throw ue;
