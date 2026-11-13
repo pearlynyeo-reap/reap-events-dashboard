@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 44</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 45</div>
   </div>
 </div>
 
@@ -1527,7 +1527,7 @@ function openEventDrawer(i) {
       drawerRow('Actual $/lead', pend(actCpl)) +
       drawerRow('Actual $/meeting', pend(actCpm)) +
       drawerRow('Pipeline (USD)', pend(pipe))) +
-    (e.hubspotTag ? drawerSection('Lead movement since the event · HubSpot', hsMovementRows(e)) : '');
+    (hsLinked(e) ? drawerSection('Lead movement since the event · HubSpot', hsMovementRows(e)) : '');
 
   __drawerIndex = i;
   document.getElementById('drawer-edit-btn').hidden = false;
@@ -1603,6 +1603,7 @@ function openEventEditor(i) {
       ${fld('Event calendar link', 'eventCalendarLink', e.eventCalendarLink, 'text', 'Link to the event’s agenda / schedule.')}
       ${fld('Badge maker link', 'badgeMakerUrl', e.badgeMakerUrl, 'text', 'Link to this event’s badge maker (Claude artifact).')}
       ${fld('HubSpot lead tag', 'hubspotTag', e.hubspotTag, 'text', 'Suffix on HubSpot lead names, e.g. “TOKEN2049 SG 2026” — leads named “Name - TOKEN2049 SG 2026” sync to this event.')}
+      ${fld('HubSpot contact event name', 'hubspotEventName', e.hubspotEventName, 'text', 'Value of the “Event Name” field on HubSpot contacts, e.g. “hk fintech week” — leads of those contacts sync to this event. Use this or the lead tag.')}
       ${isNew ? '' : `<div class="ef-section">Results · after the event <em>— fill these in once it's done; they feed the benchmarks</em></div>
       ${fld('Actual spend (USD)', 'budget_actual', e.budget_actual, 'number', 'Reconciled total cost.')}
       ${fld('Actual contacts', 'leads_actual', e.leads_actual, 'number', 'Total contacts captured.')}
@@ -1653,6 +1654,7 @@ async function saveEvent(i) {
     kpiGoal: g('kpiGoal') || null, eventCalendarLink: g('eventCalendarLink') || null,
     badgeMakerUrl: g('badgeMakerUrl') || null,
     hubspotTag: g('hubspotTag') || null,
+    hubspotEventName: g('hubspotEventName') || null,
     notes: g('notes') || null,
   });
   // Results fields only exist when editing an existing event
@@ -1705,18 +1707,23 @@ async function markCompleted(id) {
 }
 
 // ── HubSpot Leads funnel (close-out table) + refresh button ──
+// An event links to HubSpot either by lead-name suffix (hubspotTag, used up to Oct 2026)
+// or by the contacts' "Event Name" property (hubspotEventName, used since HKFTW / Stablecoin Day).
+function hsLinked(e) { return !!(e.hubspotTag || e.hubspotEventName); }
+function hsSourceLabel(e) { return e.hubspotTag ? `Lead tag: … - ${e.hubspotTag}` : `Contact event name: ${e.hubspotEventName}`; }
 function hsFunnelCell(e) {
-  if (!e.hubspotTag) return '<span style="color:var(--text-muted);" title="No HubSpot lead tag set — add one via Edit">—</span>';
+  if (!hsLinked(e)) return '<span style="color:var(--text-muted);" title="Not linked to HubSpot — add a lead tag or contact event name via Edit">—</span>';
   if (!e.hs_synced_at) return '<span style="color:var(--text-muted);">not synced</span>';
   const n = v => Number(v || 0);
   const base = e.opps_actual;
   const sub = base ? `<div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">${Math.round(n(e.hs_sao) / base * 100)}% of ${base} → SAO · ${n(e.hs_dq)} DQ</div>` : `<div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">${n(e.hs_dq)} DQ</div>`;
-  return `<span title="Tag: … - ${e.hubspotTag} · New: ${n(e.hs_new)} · Disqualified: ${n(e.hs_dq)}">${n(e.hs_mql)} → ${n(e.hs_sql)} → <b style="color:var(--indigo-dark);">${n(e.hs_sao)} SAO</b></span>${sub}`;
+  return `<span title="${hsSourceLabel(e)} · New: ${n(e.hs_new)} · Disqualified: ${n(e.hs_dq)}">${n(e.hs_mql)} → ${n(e.hs_sql)} → <b style="color:var(--indigo-dark);">${n(e.hs_sao)} SAO</b></span>${sub}`;
 }
 // Drawer: where the post-event leads are now. opps_actual is the fixed post-event baseline (ROI);
 // the hs_* fields are the live HubSpot movement and never overwrite it.
 function hsMovementRows(e) {
-  const tag = drawerRow('Lead tag', `<code style="font-size:12px;">… - ${e.hubspotTag}</code>`);
+  const tag = e.hubspotTag ? drawerRow('Lead tag', `<code style="font-size:12px;">… - ${e.hubspotTag}</code>`)
+    : drawerRow('Contact event name', `<code style="font-size:12px;">${e.hubspotEventName}</code>`);
   if (!e.hs_synced_at) return tag + drawerRow('Status', '<span style="color:var(--text-muted);">Not synced yet</span>');
   const n = v => Number(v || 0), fmtN = v => n(v).toLocaleString();
   const base = e.opps_actual, inHs = n(e.hs_leads_total), active = n(e.hs_sql) + n(e.hs_sao);

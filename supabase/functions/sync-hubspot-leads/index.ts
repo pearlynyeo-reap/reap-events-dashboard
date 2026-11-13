@@ -1,11 +1,13 @@
 // Supabase Edge Function: sync-hubspot-leads
 // Triggered by the "↻ Refresh HubSpot leads" button on the dashboard (Budget & Close-out tab).
-// Pulls every record from the HubSpot Leads object (0-136), matches leads to events by the
-// lead-name suffix stored as each event's `hubspotTag` ("Jane Doe - TOKEN2049 SG 2026"),
+// Pulls every record from the HubSpot Leads object (0-136) and matches leads to events either by
+// the lead-name suffix stored as `hubspotTag` ("Jane Doe - TOKEN2049 SG 2026") or, for events tagged
+// on the contact instead, by the contacts' "Event Name" property stored as `hubspotEventName`,
 // and writes the stage funnel back onto the event. The post-event lead count (opps_actual)
 // is the ROI baseline and is left untouched.
 //
-// Secrets: HUBSPOT_TOKEN — a HubSpot private-app token with the `crm.objects.leads.read` scope.
+// Secrets: HUBSPOT_TOKEN — a HubSpot private-app token with the `crm.objects.leads.read` and
+// `crm.objects.contacts.read` scopes.
 // SUPABASE_URL / SUPABASE_ANON_KEY are provided by Supabase automatically. The caller's own
 // login (JWT) is used for the database write, so only signed-in @reap.hk users can run it.
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -52,17 +54,49 @@ Deno.serve(async (req) => {
       after = j.paging?.next?.after;
     } while (after);
 
-    // 2. Count stages for every event that has a HubSpot lead tag
+    const hs = async (path: string, body: unknown) => {
+      const r = await fetch(`https://api.hubapi.com${path}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) throw new Error(`HubSpot ${r.status}: ${(await r.text()).slice(0, 200)}`);
+      return r.json();
+    };
+    // Lead ids belonging to contacts whose "Event Name" equals `eventName`
+    const leadIdsForEventName = async (eventName: string) => {
+      const contactIds: string[] = [];
+      let after: string | undefined;
+      do {
+        const j = await hs("/crm/v3/objects/contacts/search", {
+          filterGroups: [{ filters: [{ propertyName: "event_name", operator: "EQ", value: eventName }] }],
+          properties: ["event_name"], limit: 100, ...(after ? { after } : {}),
+        });
+        contactIds.push(...j.results.map((c: { id: string }) => c.id));
+        after = j.paging?.next?.after;
+      } while (after);
+      const ids = new Set<string>();
+      for (let i = 0; i < contactIds.length; i += 1000) {
+        const j = await hs("/crm/v4/associations/contacts/0-136/batch/read", {
+          inputs: contactIds.slice(i, i + 1000).map((id) => ({ id })),
+        });
+        for (const r of j.results || []) for (const to of r.to || []) ids.add(String(to.toObjectId));
+      }
+      return ids;
+    };
+
+    // 2. Count stages for every event linked to HubSpot
     const { data: rows, error } = await sb.from("events").select("id,name,data");
     if (error) throw error;
     const now = new Date().toISOString();
     const matched = new Set<string>();
     const events = [];
-    for (const ev of (rows || []).filter((r) => r.data?.hubspotTag)) {
-      const tag = norm(ev.data.hubspotTag);
+    for (const ev of (rows || []).filter((r) => r.data?.hubspotTag || r.data?.hubspotEventName)) {
       const c = { new: 0, mql: 0, sql: 0, sao: 0, dq: 0 };
+      const byEventName = !ev.data.hubspotTag ? await leadIdsForEventName(ev.data.hubspotEventName) : null;
+      const tag = norm(ev.data.hubspotTag);
       for (const l of leads) {
-        if (norm(l.properties.hs_lead_name).includes("- " + tag)) {
+        if (byEventName ? byEventName.has(l.id) : norm(l.properties.hs_lead_name).includes("- " + tag)) {
           const k = STAGE[l.properties.hs_pipeline_stage || ""];
           if (k) c[k]++;
           matched.add(l.id);
@@ -80,7 +114,7 @@ Deno.serve(async (req) => {
       };
       const { error: ue } = await sb.from("events").update({ data }).eq("id", ev.id);
       if (ue) throw ue;
-      events.push({ name: ev.name, tag: d.hubspotTag, qualified, ...c });
+      events.push({ name: ev.name, tag: d.hubspotTag || d.hubspotEventName, qualified, ...c });
     }
 
     // 3. Event-style tags in HubSpot ("… - SOMETHING 2027") that no event claims yet
