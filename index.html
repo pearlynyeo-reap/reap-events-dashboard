@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 49</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 50</div>
   </div>
 </div>
 
@@ -1491,16 +1491,39 @@ function openEventDrawer(i) {
   const pastBanner = (e.committed && ['confirmed', 'planning'].includes(e.status) && isPastEvent(e))
     ? `<div class="past-banner">🗓 This event's date has passed — mark it completed?<button onclick="markCompleted('${e._id}')">Mark completed</button></div>`
     : '';
+  // 2027 view: the 2027 plan leads; anything from the 2026 edition is labelled as last year.
+  const view2027 = yr === '2027';
+  const has2026 = !!(e.date && e.date !== '—');
+  const ly = view2027 && has2026 ? '2026 · ' : '';
+  const status2027 = view2027 ? statusForYear(e) : null;
+  const srcLink = e.sourceUrl ? `<a href="${e.sourceUrl}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">Event site ↗</a>` : null;
+  const plan2027 = view2027 ? drawerSection('2027 plan',
+      drawerRow('2027 date', e.date2027 || 'TBA') +
+      drawerRow('2027 status', status2027 ? statusBadge(status2027) : null) +
+      drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
+      drawerRow('Business line', e.businessLine) +
+      drawerRow('Approach', e.longlistApproach) +
+      drawerRow('Format', e.formatTier) +
+      drawerRow('Reap priority', e.reapPriority) +
+      (has2026 ? drawerRow('Budget & targets', '<span style="color:var(--text-muted);">Not set for 2027 yet</span>') : '') +
+      drawerRow('Source', srcLink)) : '';
+  const lastYearBanner = view2027 && has2026
+    ? `<div class="drawer-sec" style="margin-top:22px;padding-top:12px;border-top:2px solid var(--border);color:var(--text);">2026 edition · last year, for reference <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-muted);">— ${e.date}${e.status ? ' · ' + e.status : ''}</span></div>`
+    : '';
   const addedBy = e.createdBy ? (e.createdBy + (e.createdAt ? ' · ' + new Date(e.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '')) : null;
 
-  const body = pastBanner + evalBanner +
+  const body = (view2027 ? '' : pastBanner) + evalBanner +
     drawerSection('Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
-    drawerSection('Commitment',
-      drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
+    (view2027 ? plan2027 + drawerSection('Who is in the room',
+      drawerRow('Industries', e.industries) +
+      drawerRow('Audience / ICP', e.icp)) + (has2026 ? lastYearBanner : '') : '') +
+    ((
+    (view2027 && !has2026 ? '' : drawerSection(ly + 'Commitment',
+      (view2027 ? '' : drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null))) +
       drawerRow('Status', statusVal) +
-      drawerRow('Business line', e.businessLine) +
-      drawerRow('Added by', addedBy)) +
-    drawerSection('Economics',
+      (view2027 ? '' : drawerRow('Business line', e.businessLine)) +
+      drawerRow('Added by', addedBy))) +
+    drawerSection(ly + 'Economics',
       drawerRow('Budget total (USD)', budgetV) +
       drawerRow('Target contacts', tgt) +
       drawerRow('Target leads', estQual != null ? Number(estQual).toLocaleString() : null) +
@@ -1508,17 +1531,17 @@ function openEventDrawer(i) {
       drawerRow('Est. $/contact', estCpc) +
       drawerRow('Est. $/lead', estCpl) +
       drawerRow('Est. $/meeting', estCpm)) +
-    drawerSection('Who is in the room',
+    (view2027 ? drawerSection(ly + 'Staffing', drawerRow('Staffing', e.staffing || e.presence)) : drawerSection('Who is in the room',
       drawerRow('Industries', e.industries) +
       drawerRow('Audience / ICP', e.icp) +
-      drawerRow('Staffing', e.staffing || e.presence)) +
-    drawerSection('Execution',
+      drawerRow('Staffing', e.staffing || e.presence))) +
+    drawerSection(ly + 'Execution',
       drawerRow('What we do', e.investment) +
       drawerRow('Lead capture', e.leadCapture) +
       drawerRow('KPI goal', e.kpiGoal || '<span style="color:var(--text-muted);font-style:italic;">e.g. 140 leads→drip; 20 mtgs; secure speaker slot</span>') +
       drawerRow('Event calendar', calLink) +
       drawerRow('Badge maker', badgeLink)) +
-    drawerSection('Results · after the event',
+    drawerSection(ly + 'Results · after the event',
       drawerRow('Actual spend (USD)', pend(actSpend)) +
       drawerRow('Contacts', pend(actContacts)) +
       drawerRow('Leads (post-event)', pend(actLeads)) +
@@ -1527,8 +1550,8 @@ function openEventDrawer(i) {
       drawerRow('Actual $/lead', pend(actCpl)) +
       drawerRow('Actual $/meeting', pend(actCpm)) +
       drawerRow('Pipeline (USD)', pend(pipe))) +
-    (hsLinked(e) ? drawerSection('Lead movement since the event · HubSpot', hsMovementRows(e)) : '') +
-    ((e.nurtureEmails || []).length ? drawerSection('Post-event nurture emails', nurtureDrawerHtml(e)) : '');
+    (hsLinked(e) ? drawerSection(ly + 'Lead movement since the event · HubSpot', hsMovementRows(e)) : '') +
+    ((e.nurtureEmails || []).length ? drawerSection(ly + 'Post-event nurture emails', nurtureDrawerHtml(e)) : '')));
 
   __drawerIndex = i;
   document.getElementById('drawer-edit-btn').hidden = false;
