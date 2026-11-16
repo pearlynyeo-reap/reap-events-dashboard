@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 51</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 52</div>
   </div>
 </div>
 
@@ -1389,8 +1389,19 @@ let rosterFilter = 'active';     // default view
 let rosterYear = '2026';         // '2026' | '2027'
 const ROSTER_REGIONS = ['LATAM','APAC','Africa','North America','Europe','MENA','RoW'];
 
-// Overview stats are 2026-only: 2027-only events (no 2026 date) live in the roster's 2027 view.
-function events2026() { return EVENTS.filter(e => e.date && e.date !== '—'); }
+// Each event edition is its own row: a 2026 row and (if it recurs) a separate 2027 row, linked by
+// nextEditionId / prevEditionId. editionOf() falls back to the date for rows saved before the split.
+function editionOf(e) {
+  if (e.edition) return e.edition;
+  const d = e.date || '';
+  if (!d || d === '—') return '2027';
+  return /2027/.test(d) && !/2026/.test(d) ? '2027' : '2026';
+}
+let EDITION_BY_ID = {};
+function otherEdition(e) { const id = e.nextEditionId || e.prevEditionId; return id ? EDITION_BY_ID[id] || null : null; }
+function eventDate(e) { return (e.date && e.date !== '—') ? e.date : (e.date2027 || 'TBA'); }
+// Overview stats are 2026-only: 2027 editions live in the roster's 2027 view.
+function events2026() { return EVENTS.filter(e => editionOf(e) === '2026'); }
 
 // One roster: committed events + sales-led watchlist, always together.
 function eventUniverse() {
@@ -1443,9 +1454,7 @@ function status2027Of(d) {
 
 // Effective status for the active year — so status filters/counts reflect 2027 (nothing completed/active yet)
 function statusForYear(e) {
-  if (rosterYear !== '2027') return e.status;
-  const native = !e.date || e.date === '—';
-  return (native && e.status) ? e.status : status2027Of(e.date2027);
+  return e.status || (editionOf(e) === '2027' ? status2027Of(eventDate(e)) : e.status);
 }
 
 // ── Event detail drawer (slide-in panel, styled after the LATAM app) ──
@@ -1459,8 +1468,7 @@ function drawerSection(title, rowsHtml) {
 function openEventDrawer(i) {
   const e = (window.__rosterRows || [])[i];
   if (!e) return;
-  const yr = rosterYear;
-  const dateStr = (yr === '2027' ? (e.date2027 || 'TBA') : (e.date || '—'));
+  const dateStr = eventDate(e);
   const loc = e.city || e.region || '';
   const budgetV = e.budget_proposed != null ? fmt(e.budget_proposed) : null;
   const tgt = e.leads_target != null ? Number(e.leads_target).toLocaleString() : null;
@@ -1491,39 +1499,40 @@ function openEventDrawer(i) {
   const pastBanner = (e.committed && ['confirmed', 'planning'].includes(e.status) && isPastEvent(e))
     ? `<div class="past-banner">🗓 This event's date has passed — mark it completed?<button onclick="markCompleted('${e._id}')">Mark completed</button></div>`
     : '';
-  // 2027 view: the 2027 plan leads; anything from the 2026 edition is labelled as last year.
-  const view2027 = yr === '2027';
-  const has2026 = !!(e.date && e.date !== '—');
-  const ly = view2027 && has2026 ? '2026 · ' : '';
-  const status2027 = view2027 ? statusForYear(e) : null;
+  // Editions: a 2027 row shows its own plan, plus a short reference block from the linked 2026 row.
+  const is2027 = editionOf(e) === '2027';
+  const prev = is2027 ? otherEdition(e) : null;
+  const next = !is2027 ? otherEdition(e) : null;
   const srcLink = e.sourceUrl ? `<a href="${e.sourceUrl}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">Event site ↗</a>` : null;
-  const plan2027 = view2027 ? drawerSection('2027 plan',
-      drawerRow('2027 date', e.date2027 || 'TBA') +
-      drawerRow('2027 status', status2027 ? statusBadge(status2027) : null) +
-      drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
-      drawerRow('Business line', e.businessLine) +
-      drawerRow('Approach', e.longlistApproach) +
-      drawerRow('Format', e.formatTier) +
-      drawerRow('Reap priority', e.reapPriority) +
-      (has2026 ? drawerRow('Budget & targets', '<span style="color:var(--text-muted);">Not set for 2027 yet</span>') : '') +
-      drawerRow('Source', srcLink)) : '';
-  const lastYearBanner = view2027 && has2026
-    ? `<div class="drawer-sec" style="margin-top:22px;padding-top:12px;border-top:2px solid var(--border);color:var(--text);">2026 edition · last year, for reference <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-muted);">— ${e.date}${e.status ? ' · ' + e.status : ''}</span></div>`
-    : '';
+  const longlist = is2027 ? drawerSection('2027 longlist',
+      drawerRow('Approach', e.longlistApproach) + drawerRow('Format', e.formatTier) +
+      drawerRow('Reap priority', e.reapPriority) + drawerRow('Source', srcLink)) : '';
+  const prevBlock = prev ? (() => {
+    const pv = (prev.budget_actual || prev.budget_proposed);
+    const retro = retroLinkFor(prev.name);
+    return `<div class="drawer-sec" style="margin-top:22px;padding-top:12px;border-top:2px solid var(--border);color:var(--text);">2026 edition · for reference</div>` +
+      drawerRow('Date', prev.date) + drawerRow('Status', prev.status ? statusBadge(prev.status) : null) +
+      drawerRow('What we did', prev.investment) +
+      drawerRow('Spend (USD)', pv ? fmt(pv) + (prev.budget_actual ? '' : ' <span style="color:var(--text-muted);font-size:11.5px;">planned</span>') : null) +
+      drawerRow('Contacts', prev.leads_actual != null ? Number(prev.leads_actual).toLocaleString() : null) +
+      drawerRow('Leads (post-event)', prev.opps_actual != null ? Number(prev.opps_actual).toLocaleString() : null) +
+      drawerRow('$/lead', prev.budget_actual && prev.opps_actual ? money(prev.budget_actual / prev.opps_actual) : null) +
+      (hsLinked(prev) && prev.hs_synced_at ? drawerRow('HubSpot now', `${Number(prev.hs_sql || 0)} SQL · <b>${Number(prev.hs_sao || 0)} SAO</b> · ${Number(prev.hs_dq || 0)} DQ`) : '') +
+      (retro ? drawerRow('Post-mortem', `<a href="${retro}" target="_blank" rel="noopener" style="color:var(--indigo);font-weight:600;">📄 Retro ↗</a>`) : '') +
+      (prev.notes ? drawerRow('2026 notes', `<div class="drawer-para" style="margin:0;">${prev.notes}</div>`) : '');
+  })() : '';
   const addedBy = e.createdBy ? (e.createdBy + (e.createdAt ? ' · ' + new Date(e.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '')) : null;
 
-  const body = (view2027 ? '' : pastBanner) + evalBanner +
-    drawerSection(view2027 && has2026 ? 'Why should we attend · notes from 2026' : 'Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
-    (view2027 ? plan2027 + drawerSection('Who is in the room',
-      drawerRow('Industries', e.industries) +
-      drawerRow('Audience / ICP', e.icp)) + (has2026 ? lastYearBanner : '') : '') +
-    ((
-    (view2027 && !has2026 ? '' : drawerSection(ly + 'Commitment',
-      (view2027 ? '' : drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null))) +
+  const body = pastBanner + evalBanner +
+    drawerSection('Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
+    drawerSection('Commitment',
+      drawerRow('Tier', e.priorityTier ? tierPill(e.priorityTier) : (e.tier || null)) +
       drawerRow('Status', statusVal) +
-      (view2027 ? '' : drawerRow('Business line', e.businessLine)) +
-      drawerRow('Added by', addedBy))) +
-    drawerSection(ly + 'Economics',
+      drawerRow('Business line', e.businessLine) +
+      (next ? drawerRow('2027 edition', `${eventDate(next)} · ${statusBadge(statusForYear(next))}`) : '') +
+      drawerRow('Added by', addedBy)) +
+    longlist +
+    drawerSection('Economics',
       drawerRow('Budget total (USD)', budgetV) +
       drawerRow('Target contacts', tgt) +
       drawerRow('Target leads', estQual != null ? Number(estQual).toLocaleString() : null) +
@@ -1531,17 +1540,17 @@ function openEventDrawer(i) {
       drawerRow('Est. $/contact', estCpc) +
       drawerRow('Est. $/lead', estCpl) +
       drawerRow('Est. $/meeting', estCpm)) +
-    (view2027 ? drawerSection(ly + 'Staffing', drawerRow('Staffing', e.staffing || e.presence)) : drawerSection('Who is in the room',
+    drawerSection('Who is in the room',
       drawerRow('Industries', e.industries) +
       drawerRow('Audience / ICP', e.icp) +
-      drawerRow('Staffing', e.staffing || e.presence))) +
-    drawerSection(ly + 'Execution',
+      drawerRow('Staffing', e.staffing || e.presence)) +
+    drawerSection('Execution',
       drawerRow('What we do', e.investment) +
       drawerRow('Lead capture', e.leadCapture) +
       drawerRow('KPI goal', e.kpiGoal || '<span style="color:var(--text-muted);font-style:italic;">e.g. 140 leads→drip; 20 mtgs; secure speaker slot</span>') +
       drawerRow('Event calendar', calLink) +
       drawerRow('Badge maker', badgeLink)) +
-    drawerSection(ly + 'Results · after the event',
+    drawerSection('Results · after the event',
       drawerRow('Actual spend (USD)', pend(actSpend)) +
       drawerRow('Contacts', pend(actContacts)) +
       drawerRow('Leads (post-event)', pend(actLeads)) +
@@ -1550,8 +1559,9 @@ function openEventDrawer(i) {
       drawerRow('Actual $/lead', pend(actCpl)) +
       drawerRow('Actual $/meeting', pend(actCpm)) +
       drawerRow('Pipeline (USD)', pend(pipe))) +
-    (hsLinked(e) ? drawerSection(ly + 'Lead movement since the event · HubSpot', hsMovementRows(e)) : '') +
-    ((e.nurtureEmails || []).length ? drawerSection(ly + 'Post-event nurture emails', nurtureDrawerHtml(e)) : '')));
+    (hsLinked(e) ? drawerSection('Lead movement since the event · HubSpot', hsMovementRows(e)) : '') +
+    ((e.nurtureEmails || []).length ? drawerSection('Post-event nurture emails', nurtureDrawerHtml(e)) : '') +
+    prevBlock;
 
   __drawerIndex = i;
   document.getElementById('drawer-edit-btn').hidden = false;
@@ -1601,7 +1611,7 @@ function openEventEditor(i) {
       <div class="ef-section" style="margin-top:0;padding-top:0;border-top:none;">Event</div>
       ${fld('Event name', 'name', e.name, 'text', 'The event\'s official name.', true)}
       ${sel('Region', 'region', e.region || 'LATAM', REGION_OPTS, 'Primary region — drives grouping & filters.', true)}
-      ${fld('Date (2026)', 'date', e.date, 'text', 'e.g. “Oct 6–8, 2026”.', true)}
+      ${fld(`Date (${isNew ? rosterYear : editionOf(e)} edition)`, 'date', isNew ? '' : eventDate(e), 'text', `e.g. “Oct 6–8, ${isNew ? rosterYear : editionOf(e)}”. Each year is its own edition — editing here never changes the other year.`, true)}
       ${fld('City', 'city', e.city, 'text', 'City, Country — e.g. “Bogotá, CO”.', true)}
       <div class="ef-section">Why should we attend</div>
       ${area('Why should we attend / notes', 'notes', e.notes, 'The rationale — this is what gets evaluated. Why is this worth our time?', true)}
@@ -1690,6 +1700,8 @@ async function saveEvent(i) {
     if (document.getElementById('ef-' + k)) obj[k] = num(k);
   });
   if (document.getElementById('ef-nurture')) obj.nurtureEmails = readNurtureRows(base.nurtureEmails || []);
+  // keep the row's edition; a new event belongs to the year being viewed unless its date says otherwise
+  obj.edition = isNew ? (/20\d{2}/.test(obj.date || '') ? editionOf({ date: obj.date }) : rosterYear) : editionOf(base);
   if (isNew) {
     obj.createdBy = (CURRENT_USER && CURRENT_USER.email) || 'unknown';
     obj.createdAt = new Date().toISOString();
@@ -1736,6 +1748,20 @@ async function markCompleted(id) {
 }
 
 // ── HubSpot Leads funnel (close-out table) + refresh button ──
+// Notion post-mortem / retro pages, by event name
+const RETRO_LINKS = {
+    'Fintech Mexico (MXFTW)': 'https://www.notion.so/reap/MXFTW-Retro-3147e193475080a29d9bfd866547824a',
+    'MERGE Sao Paulo': 'https://www.notion.so/reap/Merge-Post-Mortem-3347e193475080599683c0311ea7f080',
+    'M2020 BKK': 'https://www.notion.so/reap/M2020-BKK-Event-Post-mortem-3517e1934750808c9441eaa63e444442',
+    'Stablecoin Conf by Bitso (CDMX)': 'https://www.notion.so/reap/Stablecoin-Conference-by-Bitso-Post-Mortem-39c7e1934750805b83b4ed3ce2140ef6',
+    'Blockchain Rio': 'https://www.notion.so/reap/Blockchain-Rio-Post-Mortem-3bf7e1934750819f89ebfa118a78e895',
+    'Accra Stablecoin Conf': 'https://www.notion.so/reap/Accra-Stablecoin-Conference-Post-Mortem-3a37e193475081539d04cc805d12376c',
+    'Latam Fintech Market': 'https://app.notion.com/p/3df7e193475081f69471c50b06c0a382',
+    'Token 2049 SG': 'https://app.notion.com/p/reap/Token2049-Singapore-Post-Event-Reflections-3f87e193475081e29373e6208bc884a2',
+    'HK Fintech Week': 'https://app.notion.com/p/40f7e1934750817ebd30e2ebe6e0cd16',
+};
+function retroLinkFor(name) { return RETRO_LINKS[name] || null; }
+
 // An event links to HubSpot by lead-name suffix (hubspotTag), by the contacts' "Event Name"
 // property (hubspotEventName), or both — leads matching either are counted once.
 function hsLinked(e) { return !!(e.hubspotTag || e.hubspotEventName); }
@@ -1991,9 +2017,8 @@ function buildRosterTable(filter = rosterFilter) {
   else if (['active', 'consideration', 'completed'].includes(filter)) rows = rows.filter(e => rosterBucket(e) === filter);
   else if (ROSTER_REGIONS.includes(filter)) rows = rows.filter(e => e.region === filter && rosterBucket(e) !== 'closed');
   // 'all' → everything, including closed (didn't-attend) events
-  // 2026 view hides pure-2027 events (no 2026 date), but always keeps events flagged for evaluation
-  if (yr === '2026') rows = rows.filter(e => (e.date && e.date !== '—') || e.needsEval);
-  const dateOf = e => yr === '2027' ? e.date2027 : e.date;
+  rows = rows.filter(e => editionOf(e) === yr);   // each year shows its own edition rows
+  const dateOf = e => eventDate(e);
   const sortKeyOf = e => { const d = dateOf(e) || ''; return dateSortKey(!/20\d{2}/.test(d) && quarterOf(d) ? d + ' ' + yr : d); };
   rows = rows.slice().sort((a, b) => sortKeyOf(a) - sortKeyOf(b) || a.name.localeCompare(b.name));
 
@@ -2003,37 +2028,25 @@ function buildRosterTable(filter = rosterFilter) {
     const q = quarterOf(dateOf(e));
     let qHeader = '';
     if (q !== prevQ) { prevQ = q; qHeader = `<tr class="quarter-header"><td colspan="11">${quarterLabel(q, yr)}</td></tr>`; }
-    let statusCell, isStar;
-    if (yr === '2027') {
-      const native2027 = !e.date || e.date === '—';   // 2027-native event → use its real (2027) status
-      if (native2027 && e.committed && e.status) {
-        statusCell = statusBadge(e.status);
-        isStar = ['confirmed', 'completed'].includes(e.status);
-      } else {
-        const s = status2027Of(e.date2027);
-        statusCell = statusBadge(s);
-        isStar = s === 'confirmed';
-      }
-    } else {
-      statusCell = e.committed ? statusBadge(e.status) : statusBadge('consideration');
-      isStar = e.committed && ['confirmed', 'completed'].includes(e.status);
-    }
+    const st = statusForYear(e);
+    const statusCell = e.committed ? statusBadge(st) : statusBadge(['closed', 'completed', 'confirmed', 'tbc'].includes(st) ? st : 'consideration');
+    const isStar = e.committed && ['confirmed', 'completed'].includes(st);
     const star = isStar ? '<span title="Committed — confirmed / attended" style="color:var(--indigo);font-weight:800;">⭐</span> ' : '';
     const salesTag = !e.committed ? ' <span title="Sales-led watchlist event" style="background:#f1f5f9;color:#475569;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:middle;white-space:nowrap;">SALES-LED</span>' : '';
     const evalTag = e.needsEval ? ' <span title="New — awaiting evaluation" style="background:#fef3c7;color:#b45309;font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:middle;white-space:nowrap;">🆕 EVAL</span>' : '';
     const sub = e.city ? `<div style="font-size:11px;color:var(--text-muted);">${e.city}${e.category ? ' · ' + e.category : ''}</div>` : '';
-    const budget = yr === '2027' ? '<span style="color:var(--text-muted);">—</span>'
-      : (e.committed ? fmt(e.budget_actual || e.budget_proposed) : '<span style="color:var(--text-muted);">—</span>');
-    const primaryDate = (yr === '2027' ? (e.date2027 || 'TBA') : (e.date || '—'));
+    const budget = e.committed && (e.budget_actual || e.budget_proposed) ? fmt(e.budget_actual || e.budget_proposed) : '<span style="color:var(--text-muted);">—</span>';
+    const primaryDate = eventDate(e);
     const otherLabel = yr === '2027' ? '2026' : '2027';
-    const otherVal = yr === '2027' ? e.date : e.date2027;
+    const oth = otherEdition(e);
+    const otherVal = oth ? eventDate(oth) : (yr === '2026' ? e.date2027 : null);
     const otherHtml = (otherVal && !/^TBA$/i.test(otherVal) && otherVal !== '—') ? `<div style="font-size:11px;color:var(--text-muted);">${otherLabel}: ${otherVal}</div>` : '';
     const invest = e.investment || '—';
     // Target contacts / target leads + est. cost-per-lead (projected economics)
     const dash = '<span style="color:var(--text-muted);">—</span>';
     const numCell = v => (v != null && v !== '') ? Number(v).toLocaleString() : dash;
-    const tgtContacts = (yr === '2027') ? null : e.leads_target;
-    const tgtLeads = (yr === '2027') ? null : e.opps_target;
+    const tgtContacts = e.leads_target;
+    const tgtLeads = e.opps_target;
     const budgetNum = e.budget_actual || e.budget_proposed;
     const estCpl = (budgetNum && tgtLeads) ? '$' + Math.round(budgetNum / tgtLeads).toLocaleString() : dash;
     return qHeader + `<tr class="roster-main" onclick="openEventDrawer(${i})" style="cursor:pointer;">
@@ -2093,7 +2106,7 @@ function buildRegionCards() {
 // Roster filter button counts — computed so they never drift
 function buildRosterFilterCounts() {
   let u = eventUniverse();
-  if (rosterYear === '2026') u = u.filter(e => (e.date && e.date !== '—') || e.needsEval);   // match the year-filtered table
+  u = u.filter(e => editionOf(e) === rosterYear);   // match the year-filtered table
   const countFor = f => f === 'all' ? u.length
     : f === 'eval' ? u.filter(e => e.needsEval).length
     : ['active', 'consideration', 'completed'].includes(f) ? u.filter(e => rosterBucket(e) === f).length
@@ -2129,13 +2142,13 @@ function impactPill(i) {
 
 // Unified rows across committed events (EVENTS) + market calendar (LATAM_CALENDAR)
 function regionalRows() {
-  const committed = EVENTS.map(e => ({
+  const committed = events2026().map(e => ({
     name: e.name, region: e.region, city: e.city, category: e.category,
-    date: e.date, date2027: e.date2027, priorityTier: e.priorityTier, investment: e.investment,
+    date: e.date, date2027: otherEdition(e) ? eventDate(otherEdition(e)) : e.date2027, priorityTier: e.priorityTier, investment: e.investment,
     marketImpact: e.marketImpact, presence: e.presence, salesLed: (e.priorityTier === 'Tier 3'),
     committed: true, status: e.status, calStatus: null, notes: e.notes,
   }));
-  const market = LATAM_CALENDAR.map(e => ({ ...e, committed: false, status: null }));
+  const market = LATAM_CALENDAR.filter(e => editionOf(e) === '2026').map(e => ({ ...e, committed: false, status: null, date2027: otherEdition(e) ? eventDate(otherEdition(e)) : e.date2027 }));
   return committed.concat(market);
 }
 
@@ -2284,7 +2297,7 @@ const H2_TABS = [{ key: 'confirmed', label: 'Confirmed' }, { key: 'consideration
 let h2Filter = 'confirmed';
 
 function renderH2Table() {
-  const all = EVENTS.filter(e => !['completed', 'closed'].includes(e.status));
+  const all = events2026().filter(e => !['completed', 'closed'].includes(e.status));
   const bucket = e => e.status === 'planning' ? 'consideration' : e.status;   // no dedicated Planning tab → fold into Consideration
   const nav = document.getElementById('h2-subtabs');
   if (nav) nav.innerHTML = H2_TABS.map(t => {
@@ -2649,19 +2662,7 @@ function buildMortemCards() {
     const cost = e.budget_actual != null ? e.budget_actual : e.budget_proposed;
     const cpc = (cost && e.leads_actual) ? `$${Math.round(cost / e.leads_actual).toLocaleString()}` : '—';
     const cpl = (cost && e.opps_actual) ? `$${Math.round(cost / e.opps_actual).toLocaleString()}` : '—';
-    // Show Notion links for events with retros
-    const retroLinks = {
-      'Fintech Mexico (MXFTW)': 'https://www.notion.so/reap/MXFTW-Retro-3147e193475080a29d9bfd866547824a',
-      'MERGE Sao Paulo': 'https://www.notion.so/reap/Merge-Post-Mortem-3347e193475080599683c0311ea7f080',
-      'M2020 BKK': 'https://www.notion.so/reap/M2020-BKK-Event-Post-mortem-3517e1934750808c9441eaa63e444442',
-      'Stablecoin Conf by Bitso (CDMX)': 'https://www.notion.so/reap/Stablecoin-Conference-by-Bitso-Post-Mortem-39c7e1934750805b83b4ed3ce2140ef6',
-      'Blockchain Rio': 'https://www.notion.so/reap/Blockchain-Rio-Post-Mortem-3bf7e1934750819f89ebfa118a78e895',
-      'Accra Stablecoin Conf': 'https://www.notion.so/reap/Accra-Stablecoin-Conference-Post-Mortem-3a37e193475081539d04cc805d12376c',
-      'Latam Fintech Market': 'https://app.notion.com/p/3df7e193475081f69471c50b06c0a382',
-      'Token 2049 SG': 'https://app.notion.com/p/reap/Token2049-Singapore-Post-Event-Reflections-3f87e193475081e29373e6208bc884a2',
-      'HK Fintech Week': 'https://app.notion.com/p/40f7e1934750817ebd30e2ebe6e0cd16',
-    };
-    const retroUrl = retroLinks[e.name];
+    const retroUrl = retroLinkFor(e.name);
     const nameCell = retroUrl
       ? `<strong>${e.name}</strong> <a href="${retroUrl}" target="_blank" style="font-size:11px;color:var(--indigo);font-weight:600;text-decoration:none;margin-left:6px;">📄 Retro</a>`
       : `<strong>${e.name}</strong>`;
@@ -3054,7 +3055,7 @@ let __booted = false;
 // EVENT_META (hard-coded framework fields) only fills gaps — the database always wins, so edits
 // made in the form (tier, city, 2027 date…) are never overwritten on reload.
 function applyEventMetaFallback() {
-  EVENTS.forEach(e => {
+  EVENTS.filter(e => editionOf(e) === '2026').forEach(e => {   // META describes the 2026 editions only
     const m = EVENT_META[e.name];
     if (m) Object.entries(m).forEach(([k, v]) => { if (e[k] == null || e[k] === '') e[k] = v; });
   });
@@ -3070,6 +3071,8 @@ async function loadEventsFromDB() {
   EVENTS = rows.filter(r => (r.source || 'reap') !== 'watchlist').map(r => ({ ...r.data, _id: r.id }));
   LATAM_CALENDAR = rows.filter(r => (r.source || 'reap') === 'watchlist').map(r => ({ ...r.data, _id: r.id }));
   applyEventMetaFallback();
+  EDITION_BY_ID = {};
+  EVENTS.concat(LATAM_CALENDAR).forEach(e => { EDITION_BY_ID[e._id] = e; });
   // "Last updated" = most recent edit to any event
   const times = rows.map(r => r.updated_at).filter(Boolean).sort();
   const el = document.getElementById('hdr-updated');
