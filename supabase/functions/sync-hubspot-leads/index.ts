@@ -93,10 +93,11 @@ Deno.serve(async (req) => {
     const events = [];
     for (const ev of (rows || []).filter((r) => r.data?.hubspotTag || r.data?.hubspotEventName)) {
       const c = { new: 0, mql: 0, sql: 0, sao: 0, dq: 0 };
-      const byEventName = !ev.data.hubspotTag ? await leadIdsForEventName(ev.data.hubspotEventName) : null;
-      const tag = norm(ev.data.hubspotTag);
+      // A lead counts if it matches the lead-name tag OR belongs to a contact with the event name.
+      const byEventName = ev.data.hubspotEventName ? await leadIdsForEventName(ev.data.hubspotEventName) : null;
+      const tag = ev.data.hubspotTag ? norm(ev.data.hubspotTag) : null;
       for (const l of leads) {
-        if (byEventName ? byEventName.has(l.id) : norm(l.properties.hs_lead_name).includes("- " + tag)) {
+        if ((tag && norm(l.properties.hs_lead_name).includes("- " + tag)) || byEventName?.has(l.id)) {
           const k = STAGE[l.properties.hs_pipeline_stage || ""];
           if (k) c[k]++;
           matched.add(l.id);
@@ -114,7 +115,7 @@ Deno.serve(async (req) => {
       };
       const { error: ue } = await sb.from("events").update({ data }).eq("id", ev.id);
       if (ue) throw ue;
-      events.push({ name: ev.name, tag: d.hubspotTag || d.hubspotEventName, qualified, ...c });
+      events.push({ name: ev.name, tag: [d.hubspotTag, d.hubspotEventName].filter(Boolean).join(" + "), qualified, ...c });
     }
 
     // 3. Event-style tags in HubSpot ("… - SOMETHING 2027") that no event claims yet
