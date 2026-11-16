@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 45</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 46</div>
   </div>
 </div>
 
@@ -932,7 +932,7 @@
               <th>Region</th>
               <th>Contacts</th>
               <th title="Lead count reported right after the event — fixed ROI baseline">Leads (post-event)</th>
-              <th title="HubSpot Leads board, matched by lead-name tag">HubSpot funnel<br><span style="font-weight:500;text-transform:none;letter-spacing:0;">MQL → SQL → SAO</span></th>
+              <th title="HubSpot lead funnel, plus post-event nurture email summary">HubSpot follow-up<br><span style="font-weight:500;text-transform:none;letter-spacing:0;">MQL → SQL → SAO</span></th>
               <th>Cost / Contact</th>
               <th>Cost / Qual. Lead</th>
               <th>48hr Follow-ups</th>
@@ -1527,7 +1527,8 @@ function openEventDrawer(i) {
       drawerRow('Actual $/lead', pend(actCpl)) +
       drawerRow('Actual $/meeting', pend(actCpm)) +
       drawerRow('Pipeline (USD)', pend(pipe))) +
-    (hsLinked(e) ? drawerSection('Lead movement since the event · HubSpot', hsMovementRows(e)) : '');
+    (hsLinked(e) ? drawerSection('Lead movement since the event · HubSpot', hsMovementRows(e)) : '') +
+    ((e.nurtureEmails || []).length ? drawerSection('Post-event nurture emails', nurtureDrawerHtml(e)) : '');
 
   __drawerIndex = i;
   document.getElementById('drawer-edit-btn').hidden = false;
@@ -1608,7 +1609,11 @@ function openEventEditor(i) {
       ${fld('Actual spend (USD)', 'budget_actual', e.budget_actual, 'number', 'Reconciled total cost.')}
       ${fld('Actual contacts', 'leads_actual', e.leads_actual, 'number', 'Total contacts captured.')}
       ${fld('Actual leads (post-event)', 'opps_actual', e.opps_actual, 'number', 'The lead count reported right after the event. It stays fixed as the ROI baseline — HubSpot sync tracks movement separately and never overwrites it.')}
-      ${fld('Actual pre-booked meetings', 'meetings_actual', e.meetings_actual, 'number', 'Meetings actually held.')}`}
+      ${fld('Actual pre-booked meetings', 'meetings_actual', e.meetings_actual, 'number', 'Meetings actually held.')}
+      <div class="ef ef-wide">${efHead('Post-event nurture emails', 'One row per email sent to this event’s contacts. Rates are % of delivered, bots excluded. Rows marked HubSpot are refreshed from HubSpot.')}
+        <div id="ef-nurture">${(e.nurtureEmails || []).map((m, k) => nurtureEditRow(m, k)).join('')}</div>
+        <button type="button" class="drawer-edit" style="margin-top:6px;padding:5px 12px;font-size:12px;" onclick="document.getElementById('ef-nurture').insertAdjacentHTML('beforeend', nurtureEditRow({}, -1))">+ Add email</button>
+      </div>`}
     </div>
     <div class="ef-actions">
       <button class="login-btn" style="width:auto;padding:10px 20px;margin:0;" onclick="saveEvent(${isNew ? 'null' : i})">${isNew ? 'Create event' : 'Save changes'}</button>
@@ -1661,6 +1666,7 @@ async function saveEvent(i) {
   ['budget_actual', 'leads_actual', 'opps_actual', 'meetings_actual'].forEach(k => {
     if (document.getElementById('ef-' + k)) obj[k] = num(k);
   });
+  if (document.getElementById('ef-nurture')) obj.nurtureEmails = readNurtureRows(base.nurtureEmails || []);
   if (isNew) {
     obj.createdBy = (CURRENT_USER && CURRENT_USER.email) || 'unknown';
     obj.createdAt = new Date().toISOString();
@@ -1718,6 +1724,64 @@ function hsFunnelCell(e) {
   const base = e.opps_actual;
   const sub = base ? `<div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">${Math.round(n(e.hs_sao) / base * 100)}% of ${base} → SAO · ${n(e.hs_dq)} DQ</div>` : `<div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">${n(e.hs_dq)} DQ</div>`;
   return `<span title="${hsSourceLabel(e)} · New: ${n(e.hs_new)} · Disqualified: ${n(e.hs_dq)}">${n(e.hs_mql)} → ${n(e.hs_sql)} → <b style="color:var(--indigo-dark);">${n(e.hs_sao)} SAO</b></span>${sub}`;
+}
+// ── Post-event nurture emails ──
+// e.nurtureEmails = [{ name, sentAt, delivered, opens, clicks, replies, unsubs, openRate, clickRate,
+//   hubspotId?, syncedAt? }]. Rates are fractions of delivered, bots excluded (HubSpot's default view).
+const pct1 = v => v == null || isNaN(v) ? '—' : (v * 100).toFixed(1) + '%';
+function nurtureTotals(list) {
+  const t = { n: list.length, delivered: 0, opens: 0, clicks: 0, replies: 0, unsubs: 0 };
+  list.forEach(m => {
+    const d = Number(m.delivered || 0);
+    t.delivered += d;
+    t.opens += m.opens != null ? Number(m.opens) : Math.round(d * (m.openRate || 0));
+    t.clicks += m.clicks != null ? Number(m.clicks) : Math.round(d * (m.clickRate || 0));
+    t.replies += Number(m.replies || 0); t.unsubs += Number(m.unsubs || 0);
+  });
+  t.openRate = t.delivered ? t.opens / t.delivered : null;
+  t.clickRate = t.delivered ? t.clicks / t.delivered : null;
+  return t;
+}
+function nurtureSummaryLine(e) {
+  const list = e.nurtureEmails || [];
+  if (!list.length) return '';
+  const t = nurtureTotals(list);
+  return `<div style="font-size:10.5px;color:var(--text-muted);margin-top:4px;" title="Post-event nurture: ${t.delivered.toLocaleString()} delivered, ${t.clicks} clicks, ${t.replies} replies (bots excluded)">✉ ${t.n} email${t.n > 1 ? 's' : ''} · ${pct1(t.openRate)} open · ${pct1(t.clickRate)} click</div>`;
+}
+function nurtureDrawerHtml(e) {
+  const list = (e.nurtureEmails || []).slice().sort((a, b) => String(a.sentAt || '').localeCompare(String(b.sentAt || '')));
+  const fmtD = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+  const rows = list.map(m => drawerRow(
+    `${m.name}${m.sentAt ? `<div style="font-size:11px;color:var(--text-muted);">${fmtD(m.sentAt)}${m.hubspotId ? ' · HubSpot' : ''}</div>` : ''}`,
+    `${Number(m.delivered || 0).toLocaleString()} delivered · <b>${pct1(m.openRate)}</b> open · <b>${pct1(m.clickRate)}</b> click` +
+    `<div style="font-size:11.5px;color:var(--text-muted);">${Number(m.replies || 0)} replies · ${Number(m.unsubs || 0)} unsubscribed</div>`)).join('');
+  const t = nurtureTotals(list);
+  const synced = list.map(m => m.syncedAt).filter(Boolean).sort().pop();
+  return rows + (list.length > 1 ? drawerRow('<b>All emails</b>', `${t.delivered.toLocaleString()} delivered · <b>${pct1(t.openRate)}</b> open · <b>${pct1(t.clickRate)}</b> click · ${t.replies} replies`) : '') +
+    (synced ? drawerRow('Last synced', new Date(synced).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) : '');
+}
+function nurtureEditRow(m, k) {
+  const v = x => x == null ? '' : String(x).replace(/"/g, '&quot;');
+  const r = x => x == null ? '' : +(x * 100).toFixed(1);
+  const inp = (cls, val, ph, w, type = 'number') => `<input class="nr-${cls}" type="${type}" value="${v(val)}" placeholder="${ph}" style="width:${w};padding:6px 8px;font-size:12.5px;border:1px solid var(--border);border-radius:6px;">`;
+  return `<div class="nurture-row" data-k="${k}" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;">
+    ${inp('name', m.name, 'Email name', '180px', 'text')}${inp('sent', (m.sentAt || '').slice(0, 10), '', '135px', 'date')}
+    ${inp('delivered', m.delivered, 'Delivered', '88px')}${inp('open', r(m.openRate), 'Open %', '74px')}${inp('click', r(m.clickRate), 'Click %', '74px')}${inp('replies', m.replies, 'Replies', '70px')}
+    ${m.hubspotId ? '<span class="hs-tag" title="Refreshed from HubSpot">HubSpot</span>' : ''}
+    <button type="button" title="Remove" style="border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:15px;" onclick="this.parentNode.remove()">✕</button>
+  </div>`;
+}
+function readNurtureRows(prev) {
+  return [...document.querySelectorAll('#ef-nurture .nurture-row')].map(row => {
+    const q = c => row.querySelector('.nr-' + c).value.trim();
+    const n = c => q(c) === '' ? null : Number(q(c));
+    const old = prev[Number(row.dataset.k)] || {};
+    const delivered = n('delivered'), openRate = n('open') == null ? null : n('open') / 100, clickRate = n('click') == null ? null : n('click') / 100;
+    const changed = delivered !== (old.delivered ?? null) || Math.abs((openRate ?? 0) - (old.openRate ?? 0)) > 0.0005 || Math.abs((clickRate ?? 0) - (old.clickRate ?? 0)) > 0.0005;
+    return { ...old, name: q('name') || 'Email', sentAt: q('sent') || null, delivered, openRate, clickRate, replies: n('replies'),
+      // keep exact counts only while the rates still match them
+      opens: changed ? null : (old.opens ?? null), clicks: changed ? null : (old.clicks ?? null) };
+  }).filter(m => m.name || m.delivered != null);
 }
 // Drawer: where the post-event leads are now. opps_actual is the fixed post-event baseline (ROI);
 // the hs_* fields are the live HubSpot movement and never overwrite it.
@@ -2582,7 +2646,7 @@ function buildMortemCards() {
       <td>${e.region}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${contacts}</td>
       <td style="text-align:center;font-size:12px;font-weight:600;">${qualLeads}</td>
-      <td style="text-align:center;font-size:12px;white-space:nowrap;">${hsFunnelCell(e)}</td>
+      <td style="text-align:center;font-size:12px;white-space:nowrap;">${hsFunnelCell(e)}${nurtureSummaryLine(e)}</td>
       <td style="text-align:center;font-size:12px;">${cpc}</td>
       <td style="text-align:center;font-size:12px;">${cpl}</td>
       <td style="text-align:center;">${checkIcon(followUp)}</td>
