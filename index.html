@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 46</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 47</div>
   </div>
 </div>
 
@@ -1612,7 +1612,7 @@ function openEventEditor(i) {
       ${fld('Actual pre-booked meetings', 'meetings_actual', e.meetings_actual, 'number', 'Meetings actually held.')}
       <div class="ef ef-wide">${efHead('Post-event nurture emails', 'One row per email sent to this event’s contacts. Rates are % of delivered, bots excluded. Rows marked HubSpot are refreshed from HubSpot.')}
         <div id="ef-nurture">${(e.nurtureEmails || []).map((m, k) => nurtureEditRow(m, k)).join('')}</div>
-        <button type="button" class="drawer-edit" style="margin-top:6px;padding:5px 12px;font-size:12px;" onclick="document.getElementById('ef-nurture').insertAdjacentHTML('beforeend', nurtureEditRow({}, -1))">+ Add email</button>
+        <button type="button" style="margin-top:4px;padding:6px 12px;font-size:12px;font-weight:600;border:1px dashed var(--border);border-radius:8px;background:none;color:var(--indigo-dark);cursor:pointer;" onclick="document.getElementById('ef-nurture').insertAdjacentHTML('beforeend', nurtureEditRow({}, -1))">+ Add email</button>
       </div>`}
     </div>
     <div class="ef-actions">
@@ -1763,12 +1763,17 @@ function nurtureDrawerHtml(e) {
 function nurtureEditRow(m, k) {
   const v = x => x == null ? '' : String(x).replace(/"/g, '&quot;');
   const r = x => x == null ? '' : +(x * 100).toFixed(1);
-  const inp = (cls, val, ph, w, type = 'number') => `<input class="nr-${cls}" type="${type}" value="${v(val)}" placeholder="${ph}" style="width:${w};padding:6px 8px;font-size:12.5px;border:1px solid var(--border);border-radius:6px;">`;
-  return `<div class="nurture-row" data-k="${k}" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;">
-    ${inp('name', m.name, 'Email name', '180px', 'text')}${inp('sent', (m.sentAt || '').slice(0, 10), '', '135px', 'date')}
-    ${inp('delivered', m.delivered, 'Delivered', '88px')}${inp('open', r(m.openRate), 'Open %', '74px')}${inp('click', r(m.clickRate), 'Click %', '74px')}${inp('replies', m.replies, 'Replies', '70px')}
-    ${m.hubspotId ? '<span class="hs-tag" title="Refreshed from HubSpot">HubSpot</span>' : ''}
-    <button type="button" title="Remove" style="border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:15px;" onclick="this.parentNode.remove()">✕</button>
+  const inp = (cls, val, ph, type = 'number') => `<input class="nr-${cls}" type="${type}" value="${v(val)}" placeholder="${ph}" style="width:100%;padding:6px 8px;font-size:12.5px;border:1px solid var(--border);border-radius:6px;box-sizing:border-box;">`;
+  const cell = (lbl, html) => `<div style="flex:1;min-width:0;"><div style="font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;">${lbl}</div>${html}</div>`;
+  return `<div class="nurture-row" data-k="${k}" style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:6px 0;">
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      ${cell('Email' + (m.hubspotId ? ' <span class="hs-tag" title="Refreshed from HubSpot">HubSpot</span>' : ''), inp('name', m.name, 'e.g. Email 1 · Recap', 'text'))}
+      <div style="width:140px;flex:none;">${cell('Sent', inp('sent', (m.sentAt || '').slice(0, 10), '', 'date'))}</div>
+      <button type="button" title="Remove this email" style="border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:15px;padding:6px 2px;" onclick="this.closest('.nurture-row').remove()">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      ${cell('Delivered', inp('delivered', m.delivered, '0'))}${cell('Open %', inp('open', r(m.openRate), '0'))}${cell('Click %', inp('click', r(m.clickRate), '0'))}${cell('Replies', inp('replies', m.replies, '0'))}
+    </div>
   </div>`;
 }
 function readNurtureRows(prev) {
