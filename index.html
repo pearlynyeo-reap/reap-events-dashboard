@@ -599,7 +599,7 @@
     <button class="login-btn" onclick="emailSignIn()">Sign in</button>
     <button class="login-btn login-secondary" onclick="emailSignUp()">Create account</button>
     <div id="login-status" class="login-status"></div>
-    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 50</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:16px;">build 51</div>
   </div>
 </div>
 
@@ -1513,7 +1513,7 @@ function openEventDrawer(i) {
   const addedBy = e.createdBy ? (e.createdBy + (e.createdAt ? ' · ' + new Date(e.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '')) : null;
 
   const body = (view2027 ? '' : pastBanner) + evalBanner +
-    drawerSection('Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
+    drawerSection(view2027 && has2026 ? 'Why should we attend · notes from 2026' : 'Why should we attend', e.notes ? `<div class="drawer-para">${e.notes}</div>` : '') +
     (view2027 ? plan2027 + drawerSection('Who is in the room',
       drawerRow('Industries', e.industries) +
       drawerRow('Audience / ICP', e.icp)) + (has2026 ? lastYearBanner : '') : '') +
